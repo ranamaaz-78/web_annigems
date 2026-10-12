@@ -1,0 +1,14 @@
+/* GSAP helpers: page curtain, smooth-scroll (Lenis) rules, reveal masks */
+html.lenis,html.lenis body{height:auto}
+.lenis.lenis-smooth{scroll-behavior:auto!important}
+.lenis.lenis-smooth [data-lenis-prevent]{overscroll-behavior:contain}
+.lenis.lenis-stopped{overflow:hidden}
+.page-transition{position:fixed;inset:0;z-index:900;background:var(--bg1);display:grid;place-items:center;pointer-events:none}
+.pt-logo{font-size:44px;background:var(--gold-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+[data-magnetic]{will-change:transform}
+@media (prefers-reduced-motion:reduce){.page-transition{display:none}}
+.navbar{transition:var(--tr),transform .45s cubic-bezier(.4,0,.2,1)}
+.navbar.nav-hidden{transform:translateY(-100%)}
+.navbar:hover,.navbar:focus-within{transform:none}
+[data-magnetic]{transition:box-shadow var(--tr),background var(--tr),color var(--tr),border-color var(--tr),opacity var(--tr)}
+.hero-ctas>*{transition:box-shadow var(--tr),background var(--tr),color var(--tr),border-color var(--tr)}

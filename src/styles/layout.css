@@ -1,0 +1,29 @@
+/* WISHLIST / EMPTY */
+.page-wrap{max-width:1240px;margin:0 auto;padding:0 40px 80px}
+.empty-state{text-align:center;padding:100px 20px}
+.empty-icon{font-size:48px;color:var(--gold);margin-bottom:20px;opacity:.4}
+.empty-state h3{font-family:var(--serif);font-size:28px;margin-bottom:10px}
+.empty-state p{color:var(--t2);margin-bottom:28px;font-size:14px}
+
+/* FOOTER */
+.footer{background:var(--bg1);border-top:1px solid var(--bdr);padding:64px 0 0;margin-top:80px}
+.footer-inner{max-width:1240px;margin:0 auto;padding:0 40px}
+.footer-top{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:48px;margin-bottom:48px}
+.f-logo{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.f-logo span:first-child{font-size:18px;background:var(--gold-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.f-logo span:last-child{font-family:var(--serif);font-size:20px;font-weight:600;background:var(--gold-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.f-tagline{font-size:13px;color:var(--t3);font-style:italic;font-family:var(--serif);margin-bottom:18px;line-height:1.6}
+.f-socials{display:flex;gap:10px}
+.f-social{width:36px;height:36px;border-radius:50%;border:1px solid var(--bdr);display:grid;place-items:center;color:var(--t3);transition:var(--tr)}
+.f-social:hover{border-color:var(--gold);color:var(--gold)}
+.f-col{display:flex;flex-direction:column;gap:10px}
+.f-col h5{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;font-weight:600}
+.f-col a{font-size:13px;color:var(--t3);transition:color var(--tr);cursor:pointer}
+.f-col a:hover{color:var(--gold-lt)}
+.footer-bottom{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;padding:20px 0;border-top:1px solid var(--bdr);font-size:12px;color:var(--t3)}
+.f-btm-lks{display:flex;gap:20px}
+.f-btm-lks a{cursor:pointer;transition:color var(--tr)}
+.f-btm-lks a:hover{color:var(--gold-lt)}
+.f-payments{display:flex;gap:8px}
+.pay-badge{background:var(--bg2);border:1px solid var(--bdr);padding:4px 10px;border-radius:var(--r);font-size:10px;font-weight:700;color:var(--t3)}
+

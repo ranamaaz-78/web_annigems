@@ -1,0 +1,51 @@
+/* Light mode — text/border adjustments */
+[data-theme="light"] body{background:var(--bg);color:var(--t1)}
+[data-theme="light"] ::-webkit-scrollbar-track{background:var(--bg2)}
+[data-theme="light"] ::-webkit-scrollbar-thumb{background:var(--gold)}
+[data-theme="light"] .btn-outline{border-color:rgba(160,120,40,.35);color:var(--t2)}
+[data-theme="light"] .btn-ghost{border-color:rgba(160,120,40,.2);color:var(--t3)}
+[data-theme="light"] .sort-select{color:var(--t1)}
+[data-theme="light"] .form-field input,
+[data-theme="light"] .form-field select,
+[data-theme="light"] .form-field textarea{color:var(--t1)}
+[data-theme="light"] .search-box input{color:var(--t1)}
+[data-theme="light"] .nl-input{color:var(--t1)}
+[data-theme="light"] .pc:hover{box-shadow:0 12px 40px rgba(0,0,0,.15)}
+[data-theme="light"] .cat-card:hover{box-shadow:0 12px 48px rgba(0,0,0,.18)}
+[data-theme="light"] .mega-box{box-shadow:0 24px 64px rgba(0,0,0,.15)}
+[data-theme="light"] .search-box{background:rgba(255,255,255,.95);border-color:var(--bdr2)}
+[data-theme="light"] .search-results{background:rgba(255,255,255,.97)}
+[data-theme="light"] .conf-showcase{background:var(--conf-showcase-bg)}
+[data-theme="light"] .hero-h1{color:var(--t1)}
+[data-theme="light"] .hero-h1 em{background:var(--gold-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+[data-theme="light"] .hero-p{color:rgba(26,23,16,.75)}
+[data-theme="light"] .hero-ey{color:var(--gold)}
+[data-theme="light"] .hero-scroll{color:rgba(26,23,16,.45)}
+[data-theme="light"] .hero-scroll-bar{background:linear-gradient(to bottom,var(--gold-dk),transparent)}
+[data-theme="light"] .price-slider{background:var(--bg3)}
+[data-theme="light"] .t-card{background:var(--bg2)}
+[data-theme="light"] .test-section{background:var(--bg1)}
+[data-theme="light"] .nl-section{background:linear-gradient(135deg,rgba(201,168,76,.05) 0%,transparent 60%)}
+[data-theme="light"] .footer{background:var(--bg1)}
+[data-theme="light"] .sc-rarity.elite{color:#333;border-color:rgba(0,0,0,.2);background:rgba(0,0,0,.05)}
+
+/* ─── Light mode: Navbar clearly separated from hero banner ─── */
+[data-theme="light"] .navbar{
+  background:rgba(255,255,255,.97);
+  border-bottom:1px solid rgba(160,120,40,.25);
+  box-shadow:0 2px 20px rgba(0,0,0,.10);
+}
+[data-theme="light"] .navbar.scrolled{
+  background:#ffffff;
+  box-shadow:0 4px 28px rgba(0,0,0,.14);
+  border-bottom-color:rgba(160,120,40,.3);
+}
+[data-theme="light"] .nav-link{color:rgba(26,23,16,.65)}
+[data-theme="light"] .nav-link:hover{color:var(--gold)}
+[data-theme="light"] .nav-link.hl{color:var(--gold)!important}
+[data-theme="light"] .nav-icon{border-color:rgba(160,120,40,.2);color:rgba(26,23,16,.6)}
+[data-theme="light"] .nav-icon:hover{border-color:var(--gold);color:var(--gold)}
+[data-theme="light"] .gold-ticker{background:rgba(201,168,76,.08);border-color:rgba(160,120,40,.25)}
+[data-theme="light"] .gt-unit{color:rgba(26,23,16,.4)}
+[data-theme="light"] .hamburger span{background:rgba(26,23,16,.6)}
+[data-theme="light"] .hamburger{border-color:rgba(160,120,40,.2)}

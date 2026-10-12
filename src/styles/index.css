@@ -1,0 +1,16 @@
+/* Global stylesheet entry — order matters: tokens → base → components/pages → responsive → light-theme overrides */
+@import './tokens.css';
+@import './base.css';
+@import './navbar.css';
+@import './overlays.css';
+@import './product-card.css';
+@import './home.css';
+@import './shop.css';
+@import './product.css';
+@import './checkout.css';
+@import './configurator.css';
+@import './layout.css';
+@import './animations.css';
+@import './pages.css';
+@import './responsive.css';
+@import './theme-light.css';
