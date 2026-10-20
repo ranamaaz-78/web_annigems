@@ -17,7 +17,7 @@ export default function Navbar() {
   const hidden = useScrollingDown();
   const { cartCount } = useShop();
   const { openSearch, openCart, toggleMenu } = useUI();
-  const { user } = useAuth();
+  const { user, isB2B } = useAuth();
 
   return (
     <nav className={`navbar${scrolled ? ' scrolled' : ''}${hidden ? ' nav-hidden' : ''}`}>
@@ -64,7 +64,12 @@ export default function Navbar() {
             <BagIcon />
             <span className={`cart-badge${cartCount > 0 ? ' show' : ''}`}>{cartCount}</span>
           </button>
-          <Link className="nav-icon" to={user ? '/account' : '/login'} title={user ? 'My account' : 'Sign in'} aria-label="Account">
+          {isB2B && (
+            <Link className="b2b-pill" to="/b2b" title="Business dashboard">
+              Business
+            </Link>
+          )}
+          <Link className="nav-icon" to={isB2B ? '/b2b' : user ? '/account' : '/login'} title={user ? 'My account' : 'Sign in'} aria-label="Account">
             {user ? <span className="nav-av">{user.firstName[0]}</span> : <UserIcon />}
           </Link>
           <ThemeToggle />

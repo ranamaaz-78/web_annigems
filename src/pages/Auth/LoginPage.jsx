@@ -40,6 +40,8 @@ export default function LoginPage() {
       footer={
         <>
           New to AANI GEMAS? <Link to="/register">Create an account</Link>
+          <br />
+          Business customer? <Link to="/b2b/login">Business login</Link>
         </>
       }
     >

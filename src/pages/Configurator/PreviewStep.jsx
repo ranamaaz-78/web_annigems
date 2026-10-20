@@ -1,11 +1,16 @@
 import { GOLD_RATE } from '../../data/site';
+import { useB2B } from '../../hooks/useB2B';
+import { usePricing } from '../../hooks/usePricing';
 import { formatPrice, formatPriceRounded } from '../../utils/format';
-import { configuratorTotal, goldValue } from '../../utils/pricing';
+import { configuratorTotal, goldValue, ruleLabel } from '../../utils/pricing';
 import PanelHeader from './PanelHeader';
 
 export default function PreviewStep({ ring, size, stone, onAddToCart, onRestart }) {
   const gold = goldValue(ring);
-  const total = configuratorTotal(ring, stone);
+  const retailTotal = configuratorTotal(ring, stone);
+  const { isB2B, configPrice } = usePricing();
+  const { pricing } = useB2B();
+  const total = configPrice(retailTotal);
 
   const summary = [
     ['Setting', ring.name],
@@ -67,6 +72,12 @@ export default function PreviewStep({ ring, size, stone, onAddToCart, onRestart 
                 <span>Gemstone ({stone.name})</span>
                 <span>{formatPriceRounded(stone.gemPrice)}</span>
               </div>
+              {isB2B && (
+                <div className="pc-row b2b-disc">
+                  <span>Business pricing ({ruleLabel(pricing.config, true)})</span>
+                  <span>−{formatPrice(retailTotal - total)}</span>
+                </div>
+              )}
             </div>
             <div className="pc-total-row">
               <span>Total Price</span>

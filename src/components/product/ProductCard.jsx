@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { BADGE_CLASS } from '../../data/catalog';
 import { useShop } from '../../hooks/useShop';
+import { usePricing } from '../../hooks/usePricing';
 import { useUI } from '../../hooks/useUI';
 import { useWishlistToggle } from '../../hooks/useWishlistToggle';
 import { productCartItem } from '../../utils/cart';
@@ -13,6 +14,8 @@ export default function ProductCard({ product, showCategory = false }) {
   const { addToCart, isWishlisted } = useShop();
   const { showToast, openQuickView } = useUI();
   const toggleWishlist = useWishlistToggle();
+  const { productPrice } = usePricing();
+  const { price, retail, isB2B } = productPrice(product);
   const navigate = useNavigate();
   const [added, setAdded] = useState(false);
   const addedTimer = useRef(null);
@@ -70,8 +73,15 @@ export default function ProductCard({ product, showCategory = false }) {
           <span style={{ fontSize: 11, color: 'var(--t3)' }}>({product.reviews})</span>
         </div>
         <div className="pc-price-row">
-          <span className="pc-price">{formatPrice(product.price)}</span>
-          {product.originalPrice && <span className="pc-orig">{formatPrice(product.originalPrice)}</span>}
+          <span className="pc-price">{formatPrice(price)}</span>
+          {isB2B ? (
+            <>
+              <span className="pc-orig">{formatPrice(retail)}</span>
+              <span className="b2b-tag">B2B</span>
+            </>
+          ) : (
+            product.originalPrice && <span className="pc-orig">{formatPrice(product.originalPrice)}</span>
+          )}
         </div>
         <button className={`pc-atc${added ? ' added' : ''}`} onClick={handleAddToCart} disabled={outOfStock}>
           {outOfStock ? 'Sold Out' : added ? '✓ Added' : 'Add to Cart'}

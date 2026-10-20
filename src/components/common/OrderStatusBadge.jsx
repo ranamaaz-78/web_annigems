@@ -1,6 +1,6 @@
-import { ORDER_STAGES } from '../../data/orders';
+import { orderStatus } from '../../utils/orderStatus';
 
-export default function OrderStatusBadge({ stage }) {
-  const done = stage >= ORDER_STAGES.length - 1;
-  return <span className={`status-badge${done ? ' done' : ''}`}>{ORDER_STAGES[stage]?.label ?? 'Processing'}</span>;
+export default function OrderStatusBadge({ order }) {
+  const { label, tone } = orderStatus(order);
+  return <span className={`status-badge${tone ? ` ${tone}` : ''}`}>{label}</span>;
 }

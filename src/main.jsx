@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import { AuthProvider } from './context/AuthContext';
+import { B2BProvider } from './context/B2BContext';
 import { ShopProvider } from './context/ShopContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { UIProvider } from './context/UIContext';
@@ -13,11 +14,13 @@ createRoot(document.getElementById('root')).render(
     <BrowserRouter>
       <ThemeProvider>
         <AuthProvider>
-          <ShopProvider>
-            <UIProvider>
-              <App />
-            </UIProvider>
-          </ShopProvider>
+          <B2BProvider>
+            <ShopProvider>
+              <UIProvider>
+                <App />
+              </UIProvider>
+            </ShopProvider>
+          </B2BProvider>
         </AuthProvider>
       </ThemeProvider>
     </BrowserRouter>

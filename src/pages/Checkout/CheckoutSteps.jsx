@@ -1,9 +1,9 @@
-const STEPS = ['Shipping', 'Payment', 'Review'];
+const RETAIL_STEPS = ['Shipping', 'Payment', 'Review'];
 
-export default function CheckoutSteps({ current }) {
+export default function CheckoutSteps({ current, steps = RETAIL_STEPS }) {
   return (
     <div className="co-steps">
-      {STEPS.map((label, i) => {
+      {steps.map((label, i) => {
         const n = i + 1;
         const state = n < current ? ' done' : n === current ? ' active' : '';
         return (

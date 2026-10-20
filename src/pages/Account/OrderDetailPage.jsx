@@ -50,7 +50,7 @@ export default function OrderDetailPage() {
             </h3>
             <p className="muted">Placed {formatDate(order.createdAt)}</p>
           </div>
-          <OrderStatusBadge stage={order.stage} />
+          <OrderStatusBadge order={order} />
         </div>
       </div>
 

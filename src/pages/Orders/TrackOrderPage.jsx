@@ -6,6 +6,7 @@ import PageHero from '../../components/common/PageHero';
 import Timeline from '../../components/common/Timeline';
 import { useAuth } from '../../hooks/useAuth';
 import { formatPrice } from '../../utils/format';
+import { orderTimeline } from '../../utils/orderStatus';
 import { validateEmail, validateRequired } from '../../utils/validate';
 
 export default function TrackOrderPage() {
@@ -77,9 +78,9 @@ export default function TrackOrderPage() {
                 {result.items.length} item(s) · {formatPrice(result.totals.total)}
               </p>
             </div>
-            <OrderStatusBadge stage={result.stage} />
+            <OrderStatusBadge order={result} />
           </div>
-          <Timeline stage={result.stage} createdAt={result.createdAt} />
+          <Timeline {...orderTimeline(result)} createdAt={result.createdAt} />
           <p className="muted">
             Questions about your order? <Link to="/contact">Contact us</Link>.
           </p>

@@ -14,7 +14,7 @@ const PERKS = [
 const SPARKLES = 14;
 
 // Full-screen split layout for auth pages: cinematic brand panel left, focused form right.
-export default function AuthShell({ title, subtitle, children, footer, image = '/images/hero_banner_user.jpg' }) {
+export default function AuthShell({ title, subtitle, children, footer, image = '/images/hero_banner_user.jpg', perks = PERKS, eyebrow }) {
   const root = useRef(null);
 
   useGSAP(
@@ -56,14 +56,14 @@ export default function AuthShell({ title, subtitle, children, footer, image = '
           <Logo className="nav-logo" textClassName="nav-logo-text" />
         </Link>
         <div className="av-copy">
-          <p className="sec-ey">Since {BRAND.since}</p>
+          <p className="sec-ey">{eyebrow ?? `Since ${BRAND.since}`}</p>
           <h2 className="av-h">
             {BRAND.tagline[0]}
             <br />
             <em>{BRAND.tagline[1]}</em>
           </h2>
           <ul className="av-perks">
-            {PERKS.map((p) => (
+            {perks.map((p) => (
               <li className="av-perk" key={p.title}>
                 <span>{p.icon}</span>
                 <div>

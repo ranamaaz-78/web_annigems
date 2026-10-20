@@ -6,7 +6,7 @@ import Logo from '../common/Logo';
 
 export default function MobileMenu() {
   const { overlay, close } = useUI();
-  const { user } = useAuth();
+  const { user, isB2B } = useAuth();
   return (
     <div className={`mob-menu${overlay === 'menu' ? ' open' : ''}`} aria-hidden={overlay !== 'menu'}>
       <button className="mob-close" onClick={close} aria-label="Close menu">
@@ -19,9 +19,14 @@ export default function MobileMenu() {
             {item.label}
           </Link>
         ))}
-        <Link to={user ? '/account' : '/login'} onClick={close}>
-          {user ? 'My Account' : 'Sign In / Register'}
+        <Link to={isB2B ? '/b2b' : user ? '/account' : '/login'} onClick={close}>
+          {isB2B ? 'Business Dashboard' : user ? 'My Account' : 'Sign In / Register'}
         </Link>
+        {!user && (
+          <Link to="/b2b/login" onClick={close}>
+            Business Login
+          </Link>
+        )}
       </nav>
     </div>
   );

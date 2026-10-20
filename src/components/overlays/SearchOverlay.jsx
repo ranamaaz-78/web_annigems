@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PRODUCTS } from '../../data/products';
+import { usePricing } from '../../hooks/usePricing';
 import { useUI } from '../../hooks/useUI';
 import { formatPrice } from '../../utils/format';
 import { SearchIcon } from '../common/Icons';
@@ -10,6 +11,7 @@ const MAX_RESULTS = 6;
 export default function SearchOverlay() {
   const { overlay, close } = useUI();
   const navigate = useNavigate();
+  const { productPrice } = usePricing();
   const inputRef = useRef(null);
   const [query, setQuery] = useState('');
   const open = overlay === 'search';
@@ -67,7 +69,7 @@ export default function SearchOverlay() {
                 <div>
                   <p className="sr-name">{p.name}</p>
                   <p className="sr-cat">
-                    {p.category} · {formatPrice(p.price)}
+                    {p.category} · {formatPrice(productPrice(p).price)}
                   </p>
                 </div>
               </button>

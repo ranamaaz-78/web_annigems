@@ -10,7 +10,7 @@ const Field = ({ id, label, ...input }) => (
   </div>
 );
 
-export default function ShippingStep({ subtotal, shippingMethod, onShippingMethod, onNext, active }) {
+export default function ShippingStep({ subtotal, shippingMethod, onShippingMethod, onNext, active, nextLabel = 'Continue to Payment →' }) {
   const { user } = useAuth();
   const addr = user?.addresses?.find((a) => a.isDefault) ?? user?.addresses?.[0];
 
@@ -79,7 +79,7 @@ export default function ShippingStep({ subtotal, shippingMethod, onShippingMetho
         </div>
 
         <button type="submit" className="btn-gold">
-          Continue to Payment →
+          {nextLabel}
         </button>
       </form>
     </div>

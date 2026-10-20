@@ -4,6 +4,7 @@ import Stars from '../../components/common/Stars';
 import { RING_SIZES } from '../../data/products';
 import { CARE_INSTRUCTIONS, SHIPPING_POLICY } from '../../data/site';
 import { useShop } from '../../hooks/useShop';
+import { usePricing } from '../../hooks/usePricing';
 import { useUI } from '../../hooks/useUI';
 import { useWishlistToggle } from '../../hooks/useWishlistToggle';
 import { productCartItem } from '../../utils/cart';
@@ -14,6 +15,8 @@ export default function ProductInfo({ product }) {
   const { addToCart, isWishlisted } = useShop();
   const { showToast } = useUI();
   const toggleWishlist = useWishlistToggle();
+  const { productPrice } = usePricing();
+  const { price, retail, isB2B } = productPrice(product);
   const [size, setSize] = useState(null);
   const isRing = product.category === 'rings';
 
@@ -48,8 +51,14 @@ export default function ProductInfo({ product }) {
       </div>
 
       <div className="pd-price-row">
-        <span className="pd-price">{formatPrice(product.price)}</span>
-        {product.originalPrice && (
+        <span className="pd-price">{formatPrice(price)}</span>
+        {isB2B && (
+          <>
+            <span className="pd-orig">{formatPrice(retail)}</span>
+            <span className="pd-save">Business price · Save {formatPrice(retail - price)}</span>
+          </>
+        )}
+        {!isB2B && product.originalPrice && (
           <>
             <span className="pd-orig">{formatPrice(product.originalPrice)}</span>
             <span className="pd-save">Save {formatPrice(product.originalPrice - product.price)}</span>

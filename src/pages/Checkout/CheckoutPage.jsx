@@ -3,6 +3,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useShop } from '../../hooks/useShop';
 import { orderTotals } from '../../utils/pricing';
+import B2BReviewStep from './B2BReviewStep';
 import CheckoutSteps from './CheckoutSteps';
 import OrderSummary from './OrderSummary';
 import PaymentStep from './PaymentStep';
@@ -13,7 +14,7 @@ import ShippingStep from './ShippingStep';
 // and moves on to /order-success/:id.
 export default function CheckoutPage() {
   const { cart, cartSubtotal, discount, clearCart, removeCoupon } = useShop();
-  const { placeOrder } = useAuth();
+  const { placeOrder, placeB2BOrder, isB2B } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [shippingMethod, setShippingMethod] = useState('standard');
@@ -35,12 +36,19 @@ export default function CheckoutPage() {
     navigate(`/order-success/${order.id}`, { replace: true });
   };
 
+  const handleSubmitB2B = ({ poNumber, notes }) => {
+    const order = placeB2BOrder({ items: cart, totals, address, shippingMethod, poNumber, notes });
+    setPlaced(true);
+    clearCart();
+    navigate(`/order-success/${order.id}`, { replace: true });
+  };
+
   if (placed) return null;
   if (!cart.length) return <Navigate to="/cart" replace />;
 
   return (
     <div className="co-wrap">
-      <CheckoutSteps current={step} />
+      <CheckoutSteps current={step} steps={isB2B ? ['Shipping', 'Review & Submit'] : undefined} />
       <div className="co-layout" data-reveal="up">
         <div>
           {/* All steps stay mounted so entered values survive going back */}
@@ -49,13 +57,20 @@ export default function CheckoutPage() {
             subtotal={cartSubtotal - discount}
             shippingMethod={shippingMethod}
             onShippingMethod={setShippingMethod}
+            nextLabel={isB2B ? 'Continue to Review →' : undefined}
             onNext={(addr) => {
               setAddress(addr);
               goToStep(2);
             }}
           />
-          <PaymentStep active={step === 2} onBack={() => goToStep(1)} onNext={() => goToStep(3)} />
-          <ReviewStep active={step === 3} cart={cart} onBack={() => goToStep(2)} onPlaceOrder={handlePlaceOrder} />
+          {isB2B ? (
+            <B2BReviewStep active={step === 2} cart={cart} onBack={() => goToStep(1)} onSubmit={handleSubmitB2B} />
+          ) : (
+            <>
+              <PaymentStep active={step === 2} onBack={() => goToStep(1)} onNext={() => goToStep(3)} />
+              <ReviewStep active={step === 3} cart={cart} onBack={() => goToStep(2)} onPlaceOrder={handlePlaceOrder} />
+            </>
+          )}
         </div>
         <OrderSummary cart={cart} totals={totals} />
       </div>

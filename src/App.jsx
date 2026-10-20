@@ -1,7 +1,18 @@
 import { Route, Routes } from 'react-router-dom';
 import AuthLayout from './components/auth/AuthLayout';
+import B2BRoute from './components/account/B2BRoute';
 import ProtectedRoute from './components/account/ProtectedRoute';
 import Layout from './components/layout/Layout';
+import B2BLayout from './pages/B2B/B2BLayout';
+import B2BLoginPage from './pages/B2B/B2BLoginPage';
+import B2BOrderDetailPage from './pages/B2B/B2BOrderDetailPage';
+import B2BOrdersPage from './pages/B2B/B2BOrdersPage';
+import CompanyPage from './pages/B2B/CompanyPage';
+import CreditPage from './pages/B2B/CreditPage';
+import DashboardPage from './pages/B2B/DashboardPage';
+import PayPage from './pages/B2B/PayPage';
+import WholesalePage from './pages/B2B/WholesalePage';
+import ServicesPage from './pages/Services/ServicesPage';
 import AboutPage from './pages/About/AboutPage';
 import AccountLayout from './pages/Account/AccountLayout';
 import AddressesPage from './pages/Account/AddressesPage';
@@ -36,6 +47,7 @@ export default function App() {
         <Route path="register" element={<RegisterPage />} />
         <Route path="forgot-password" element={<ForgotPasswordPage />} />
         <Route path="reset-password" element={<ResetPasswordPage />} />
+        <Route path="b2b/login" element={<B2BLoginPage />} />
       </Route>
 
       <Route element={<Layout />}>
@@ -59,6 +71,21 @@ export default function App() {
           </Route>
         </Route>
 
+        <Route element={<B2BRoute />}>
+          <Route path="b2b" element={<B2BLayout />}>
+            <Route index element={<DashboardPage />} />
+            <Route path="orders" element={<B2BOrdersPage />} />
+            <Route path="orders/:id" element={<B2BOrderDetailPage />} />
+            <Route path="credit" element={<CreditPage />} />
+            <Route path="company" element={<CompanyPage />} />
+            <Route path="addresses" element={<AddressesPage />} />
+            <Route path="password" element={<PasswordPage />} />
+          </Route>
+          <Route path="b2b/pay/:id" element={<PayPage />} />
+        </Route>
+
+        <Route path="wholesale" element={<WholesalePage />} />
+        <Route path="services" element={<ServicesPage />} />
         <Route path="about" element={<AboutPage />} />
         <Route path="contact" element={<ContactPage />} />
         <Route path="faq" element={<FaqPage />} />

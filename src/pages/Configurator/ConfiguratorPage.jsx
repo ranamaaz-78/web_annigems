@@ -46,6 +46,7 @@ export default function ConfiguratorPage() {
     addToCart({
       key,
       id: key,
+      kind: 'config',
       name: `${ring.name} x ${stone.name}`,
       subtitle: `Custom ${ring.setting} + ${stone.name}`,
       price: configuratorTotal(ring, stone),

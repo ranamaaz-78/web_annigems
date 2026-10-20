@@ -4,6 +4,7 @@ import EmptyState from '../../components/common/EmptyState';
 import PageHero from '../../components/common/PageHero';
 import { COUNTRIES, FREE_SHIPPING_THRESHOLD, SHIPPING_METHODS, TAX_RATE } from '../../data/site';
 import { useShop } from '../../hooks/useShop';
+import { usePricing } from '../../hooks/usePricing';
 import { useUI } from '../../hooks/useUI';
 import { formatPrice } from '../../utils/format';
 import { orderTotals, shippingCost } from '../../utils/pricing';
@@ -11,6 +12,7 @@ import { orderTotals, shippingCost } from '../../utils/pricing';
 export default function CartPage() {
   const { cart, cartSubtotal, discount, couponCode, coupon, changeQty, removeFromCart, applyCoupon, removeCoupon } = useShop();
   const { showToast } = useUI();
+  const { isB2B } = usePricing();
   const [code, setCode] = useState('');
   const [couponError, setCouponError] = useState('');
   const [method, setMethod] = useState('standard');
@@ -103,7 +105,10 @@ export default function CartPage() {
                   +
                 </button>
               </div>
-              <span className="cl-price">{formatPrice(item.price * item.qty)}</span>
+              <span className="cl-price">
+                {isB2B && item.retailPrice > item.price && <s className="cl-was">{formatPrice(item.retailPrice * item.qty)}</s>}
+                {formatPrice(item.price * item.qty)}
+              </span>
             </article>
           ))}
           <Link to="/shop" className="auth-link">
@@ -115,6 +120,10 @@ export default function CartPage() {
           <div className="side-card">
             <h3 className="cs-title">Order Summary</h3>
 
+            {isB2B ? (
+              <p className="b2b-note">✦ Business pricing applied. Your order is sent for approval before payment.</p>
+            ) : (
+              <>
             <form className="coupon-form" onSubmit={handleCoupon}>
               <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="Coupon code (try AANI10)" aria-label="Coupon code" />
               <button type="submit" className="btn-outline btn-sm">
@@ -129,6 +138,9 @@ export default function CartPage() {
                   ✕
                 </button>
               </p>
+            )}
+
+              </>
             )}
 
             <div className="cs-rows">
@@ -156,7 +168,7 @@ export default function CartPage() {
               <span className="cs-total-val">{formatPrice(totals.total)}</span>
             </div>
             <Link to="/checkout" className="btn-gold btn-full" data-magnetic>
-              Proceed to Checkout →
+              {isB2B ? 'Submit for Approval →' : 'Proceed to Checkout →'}
             </Link>
           </div>
 

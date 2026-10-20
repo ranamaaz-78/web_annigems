@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { DEMO_B2B_USER, SEED_B2B_ORDERS } from '../data/b2b';
 import { DEMO_USER, SEED_ORDERS } from '../data/orders';
 import { readStorage, removeStorage, writeStorage } from '../utils/storage';
 import { AuthContext } from './contexts';
@@ -18,19 +19,15 @@ const publicUser = (u) => {
   return rest;
 };
 
-const loadUsers = () => {
-  const stored = readStorage(USERS_KEY, null);
-  if (stored) return stored;
-  writeStorage(USERS_KEY, [DEMO_USER]);
-  return [DEMO_USER];
-};
+// Adds seed records that an older stored copy is missing (e.g. the demo business account).
+const withSeeds = (stored, seeds) => [...stored, ...seeds.filter((seed) => !stored.some((item) => item.id === seed.id))];
 
-const loadOrders = () => {
-  const stored = readStorage(ORDERS_KEY, null);
-  if (stored) return stored;
-  writeStorage(ORDERS_KEY, SEED_ORDERS);
-  return SEED_ORDERS;
-};
+const loadUsers = () => withSeeds(readStorage(USERS_KEY, [DEMO_USER]), [DEMO_USER, DEMO_B2B_USER]);
+
+const loadOrders = () => withSeeds(readStorage(ORDERS_KEY, SEED_ORDERS), [...SEED_ORDERS, ...SEED_B2B_ORDERS]);
+
+const isBusiness = (u) => u?.accountType === 'b2b';
+
 
 export function AuthProvider({ children }) {
   const [users, setUsers] = useState(loadUsers);
@@ -51,9 +48,23 @@ export function AuthProvider({ children }) {
     (email, password) => {
       const found = users.find((u) => u.email === normalize(email));
       if (!found) return { ok: false, error: 'No account found with this email.' };
+      if (isBusiness(found)) return { ok: false, error: 'This is a business account. Please use the Business Login.' };
       if (found.provider === 'google' && !found.password) {
         return { ok: false, error: 'This account uses Google. Please continue with Google.' };
       }
+      if (found.password !== password) return { ok: false, error: 'Incorrect password. Please try again.' };
+      setSessionEmail(found.email);
+      return { ok: true };
+    },
+    [users],
+  );
+
+  // Business accounts are created by the admin; this is their separate sign-in.
+  const loginB2B = useCallback(
+    (email, password) => {
+      const found = users.find((u) => u.email === normalize(email));
+      if (!found || !isBusiness(found)) return { ok: false, error: 'No business account found with this email.' };
+      if (found.status === 'suspended') return { ok: false, error: 'This business account is suspended. Please contact us.' };
       if (found.password !== password) return { ok: false, error: 'Incorrect password. Please try again.' };
       setSessionEmail(found.email);
       return { ok: true };
@@ -67,6 +78,7 @@ export function AuthProvider({ children }) {
       if (users.some((u) => u.email === key)) return { ok: false, error: 'An account with this email already exists.' };
       const created = {
         id: `u-${Date.now()}`,
+        accountType: 'customer',
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         email: key,
@@ -179,6 +191,39 @@ export function AuthProvider({ children }) {
     [sessionEmail],
   );
 
+  // Business orders wait for admin approval before any payment happens.
+  const placeB2BOrder = useCallback(
+    ({ items, totals, address, shippingMethod, poNumber, notes }) => {
+      const account = users.find((u) => u.email === sessionEmail);
+      const order = {
+        id: `BG-${Math.floor(Math.random() * 90000 + 10000)}`,
+        type: 'b2b',
+        email: sessionEmail,
+        company: account?.company?.name ?? '',
+        createdAt: Date.now(),
+        stage: 0,
+        approval: 'pending',
+        payment: { method: null, status: 'unpaid' },
+        poNumber: poNumber?.trim() ?? '',
+        notes: notes?.trim() ?? '',
+        shippingMethod,
+        address,
+        items,
+        totals,
+      };
+      setOrders((prev) => [order, ...prev]);
+      return order;
+    },
+    [users, sessionEmail],
+  );
+
+  // patch can be an object or (order) => object. Used by the B2B payment requests.
+  const updateOrder = useCallback(
+    (id, patch) =>
+      setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, ...(typeof patch === 'function' ? patch(o) : patch) } : o))),
+    [],
+  );
+
   const getOrder = useCallback((id) => orders.find((o) => o.id.toLowerCase() === String(id).trim().toLowerCase()), [orders]);
 
   const myOrders = useMemo(() => (user ? orders.filter((o) => o.email === user.email) : []), [orders, user]);
@@ -188,6 +233,8 @@ export function AuthProvider({ children }) {
       user,
       isLoggedIn: Boolean(user),
       login,
+      loginB2B,
+      isB2B: isBusiness(user),
       register,
       loginWithGoogle,
       logout,
@@ -200,9 +247,11 @@ export function AuthProvider({ children }) {
       orders,
       myOrders,
       placeOrder,
+      placeB2BOrder,
+      updateOrder,
       getOrder,
     }),
-    [user, login, register, loginWithGoogle, logout, sendResetCode, resetPassword, updateUser, changePassword, saveAddress, deleteAddress, orders, myOrders, placeOrder, getOrder],
+    [user, login, loginB2B, register, loginWithGoogle, logout, sendResetCode, resetPassword, updateUser, changePassword, saveAddress, deleteAddress, orders, myOrders, placeOrder, placeB2BOrder, updateOrder, getOrder],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

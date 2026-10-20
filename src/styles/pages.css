@@ -291,3 +291,8 @@
 .form-r2{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 .form-field input,.form-field select,.form-field textarea{width:100%;min-width:0}
 [data-theme="light"] .auth-title,[data-theme="light"] .page-hero-title{background-image:linear-gradient(135deg,#c79a33 0%,#9a6f14 60%,#6e4c0a 100%)}
+
+/* status badge tones (B2B states) */
+.status-badge.warn{color:#e0a030;border-color:rgba(224,160,48,.45);background:rgba(224,160,48,.08)}
+.status-badge.bad{color:#e74c3c;border-color:rgba(231,76,60,.4);background:rgba(231,76,60,.08)}
+.status-badge.info{color:#4aa3e8;border-color:rgba(74,163,232,.4);background:rgba(74,163,232,.08)}

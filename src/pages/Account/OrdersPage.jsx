@@ -20,7 +20,7 @@ export default function OrdersPage() {
               <p className="order-id">#{o.id}</p>
               <p className="muted">Placed {formatDate(o.createdAt)}</p>
             </div>
-            <OrderStatusBadge stage={o.stage} />
+            <OrderStatusBadge order={o} />
           </div>
           <div className="order-thumbs">
             {o.items.map((i) => (

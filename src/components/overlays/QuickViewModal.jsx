@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { getProductById } from '../../data/products';
 import { useShop } from '../../hooks/useShop';
+import { usePricing } from '../../hooks/usePricing';
 import { useUI } from '../../hooks/useUI';
 import { productCartItem } from '../../utils/cart';
 import { formatPrice } from '../../utils/format';
@@ -11,6 +12,7 @@ export default function QuickViewModal() {
   const { overlay, quickViewId, close, showToast } = useUI();
   const { addToCart } = useShop();
   const navigate = useNavigate();
+  const { productPrice } = usePricing();
   const product = quickViewId ? getProductById(quickViewId) : null;
 
   const goTo = (path) => {
@@ -44,8 +46,15 @@ export default function QuickViewModal() {
             <p className="qv-sub">{product.subtitle}</p>
             <Stars rating={product.rating} className="qv-stars" />
             <div className="qv-price-row">
-              <span className="qv-price">{formatPrice(product.price)}</span>
-              {product.originalPrice && <span className="qv-orig">{formatPrice(product.originalPrice)}</span>}
+              <span className="qv-price">{formatPrice(productPrice(product).price)}</span>
+              {productPrice(product).isB2B ? (
+                <>
+                  <span className="qv-orig">{formatPrice(product.price)}</span>
+                  <span className="b2b-tag">B2B</span>
+                </>
+              ) : (
+                product.originalPrice && <span className="qv-orig">{formatPrice(product.originalPrice)}</span>
+              )}
             </div>
             <p className="qv-desc">{product.description}</p>
             <div className="qv-btns">

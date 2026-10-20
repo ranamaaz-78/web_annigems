@@ -11,6 +11,7 @@ export default function OrderSuccessPage() {
   const { getOrder } = useAuth();
   const order = getOrder(id);
   const root = useRef(null);
+  const isB2B = order?.type === 'b2b';
 
   useGSAP(
     () => {
@@ -45,11 +46,21 @@ export default function OrderSuccessPage() {
         ))}
       </div>
       <span className="os-icon">✦</span>
-      <h1 className="os-title">Order Placed!</h1>
+      <h1 className="os-title">{isB2B ? 'Order Submitted!' : 'Order Placed!'}</h1>
       <p className="os-sub">
-        Thank you for your purchase. A confirmation has been sent to your email.
-        <br />
-        Your order will be crafted and shipped within 4-6 weeks.
+        {isB2B ? (
+          <>
+            Your order is waiting for admin approval. Once approved you can pay by payment link or on credit
+            <br />
+            from your business dashboard. Crafting starts after payment is confirmed.
+          </>
+        ) : (
+          <>
+            Thank you for your purchase. A confirmation has been sent to your email.
+            <br />
+            Your order will be crafted and shipped within 4-6 weeks.
+          </>
+        )}
       </p>
       <p className="os-num">Order #{id}</p>
 
@@ -65,16 +76,22 @@ export default function OrderSuccessPage() {
             </div>
           ))}
           <div className="os-line os-total">
-            <span>Total paid</span>
+            <span>{isB2B ? 'Order total' : 'Total paid'}</span>
             <b>{formatPrice(order.totals.total)}</b>
           </div>
         </div>
       )}
 
       <div className="os-acts">
-        <Link className="btn-gold" to={`/track-order?id=${id}&email=${encodeURIComponent(order?.email ?? '')}`}>
-          Track Order
-        </Link>
+        {isB2B ? (
+          <Link className="btn-gold" to={`/b2b/orders/${id}`}>
+            View Order
+          </Link>
+        ) : (
+          <Link className="btn-gold" to={`/track-order?id=${id}&email=${encodeURIComponent(order?.email ?? '')}`}>
+            Track Order
+          </Link>
+        )}
         <Link className="btn-outline" to="/shop">
           Continue Shopping
         </Link>

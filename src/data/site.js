@@ -72,6 +72,8 @@ export const MOBILE_NAV = [
   { label: '✦ Design Your Ring', to: '/design-your-ring', highlight: true },
   { label: 'Wishlist', to: '/wishlist' },
   { label: 'Our Story', to: '/about' },
+  { label: 'Services', to: '/services' },
+  { label: 'Wholesale / B2B', to: '/wholesale' },
   { label: 'Contact', to: '/contact' },
   { label: 'Track Order', to: '/track-order' },
 ];
@@ -90,9 +92,9 @@ export const FOOTER_COLUMNS = [
     heading: 'Services',
     links: [
       { label: 'Design Your Ring', to: '/design-your-ring' },
-      { label: 'Ring Resizing' },
-      { label: 'Engraving' },
-      { label: 'Jewelry Repairs' },
+      { label: 'Ring Resizing', to: '/services' },
+      { label: 'Engraving', to: '/services' },
+      { label: 'Jewelry Repairs', to: '/services' },
     ],
   },
   {
@@ -113,6 +115,8 @@ export const FOOTER_COLUMNS = [
       { label: 'My Account', to: '/account' },
       { label: 'My Orders', to: '/account/orders' },
       { label: 'Wishlist', to: '/wishlist' },
+      { label: 'Wholesale / B2B', to: '/wholesale' },
+      { label: 'Business Login', to: '/b2b/login' },
     ],
   },
 ];

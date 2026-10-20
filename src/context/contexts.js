@@ -5,3 +5,4 @@ export const ThemeContext = createContext(null);
 export const ShopContext = createContext(null);
 export const UIContext = createContext(null);
 export const AuthContext = createContext(null);
+export const B2BContext = createContext(null);
