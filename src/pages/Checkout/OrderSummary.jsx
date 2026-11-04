@@ -33,7 +33,7 @@ export default function OrderSummary({ cart, totals }) {
           <span>{totals.shipping === 0 ? 'Free' : formatPrice(totals.shipping)}</span>
         </div>
         <div className="cs-row">
-          <span>Tax ({TAX_RATE * 100}%)</span>
+          <span>Tax ({Math.round((totals.taxRate ?? TAX_RATE) * 10000) / 100}%)</span>
           <span>{formatPrice(totals.tax)}</span>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import { useAuth } from '../../hooks/useAuth';
-import { COUNTRIES, SHIPPING_METHODS } from '../../data/site';
+import { COUNTRIES, SHIPPING_METHODS, countryCode } from '../../data/site';
 import { shippingCost } from '../../utils/pricing';
 import { formatPrice } from '../../utils/format';
 
@@ -10,9 +10,11 @@ const Field = ({ id, label, ...input }) => (
   </div>
 );
 
-export default function ShippingStep({ subtotal, shippingMethod, onShippingMethod, onNext, active, nextLabel = 'Continue to Payment →' }) {
+export default function ShippingStep({ subtotal, shippingMethod, shippingOptions, onShippingMethod, onNext, active, nextLabel = 'Continue to Payment →' }) {
   const { user } = useAuth();
   const addr = user?.addresses?.find((a) => a.isDefault) ?? user?.addresses?.[0];
+  // Options and prices come from the cart quote; the local list is only a fallback while it loads.
+  const options = shippingOptions?.length ? shippingOptions : SHIPPING_METHODS.map((m) => ({ ...m, cost: shippingCost(m.id, subtotal) }));
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -26,6 +28,7 @@ export default function ShippingStep({ subtotal, shippingMethod, onShippingMetho
       zip: f.get('zip'),
       state: f.get('state'),
       country: f.get('country'),
+      countryCode: countryCode(f.get('country')),
     });
   };
 
@@ -58,8 +61,8 @@ export default function ShippingStep({ subtotal, shippingMethod, onShippingMetho
 
         <div className="ship-opts">
           <h4>Delivery Method</h4>
-          {SHIPPING_METHODS.map((m) => {
-            const cost = shippingCost(m.id, subtotal);
+          {options.map((m) => {
+            const cost = m.cost;
             return (
               <label className="ship-opt" key={m.id}>
                 <input

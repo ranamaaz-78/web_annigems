@@ -1,8 +1,7 @@
 import Stars from '../../components/common/Stars';
 import { RATING_DISTRIBUTION } from '../../data/products';
-import { PRODUCT_REVIEWS } from '../../data/testimonials';
 
-export default function ProductReviews({ product }) {
+export default function ProductReviews({ product, reviews = [] }) {
   return (
     <section className="pd-section" id="pd-reviews">
       <h2 className="pd-section-title">Client Reviews</h2>
@@ -24,7 +23,7 @@ export default function ProductReviews({ product }) {
           </div>
         </div>
         <div className="rev-list">
-          {PRODUCT_REVIEWS.map((r) => (
+          {reviews.map((r) => (
             <div className="rev" key={r.name}>
               <div className="rev-hdr">
                 <div className="rev-av">{r.initials}</div>
@@ -32,7 +31,7 @@ export default function ProductReviews({ product }) {
                   <p className="rev-name">{r.name}</p>
                   <p className="rev-loc">{r.location}</p>
                 </div>
-                <span className="rev-stars">★★★★★</span>
+                <span className="rev-stars">{'★'.repeat(Math.round(r.rating ?? 5))}</span>
               </div>
               <p className="rev-text">&ldquo;{r.text}&rdquo;</p>
             </div>

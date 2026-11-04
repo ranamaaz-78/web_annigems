@@ -16,12 +16,13 @@ export default function RegisterPage() {
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', password: '', confirm: '', terms: false });
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState('');
+  const [busy, setBusy] = useState(false);
 
   if (isLoggedIn) return <Navigate to="/account" replace />;
 
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const errs = {
       firstName: validateRequired(form.firstName, 'First name'),
@@ -33,7 +34,9 @@ export default function RegisterPage() {
     };
     setErrors(errs);
     if (hasErrors(errs)) return;
-    const res = register(form);
+    setBusy(true);
+    const res = await register(form);
+    setBusy(false);
     if (!res.ok) return setFormError(res.error);
     showToast(`Welcome to ${BRAND.name}!`);
     return navigate('/account', { replace: true });
@@ -79,8 +82,8 @@ export default function RegisterPage() {
           </span>
         </label>
         {errors.terms && <span className="field-error">{errors.terms}</span>}
-        <button type="submit" className="btn-gold btn-full" data-magnetic>
-          Create Account
+        <button type="submit" className="btn-gold btn-full" data-magnetic disabled={busy}>
+          {busy ? 'Creating account…' : 'Create Account'}
         </button>
       </form>
     </AuthShell>

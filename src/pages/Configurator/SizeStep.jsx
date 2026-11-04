@@ -1,15 +1,17 @@
 import { CONFIG_SIZES, SIZE_CHART, SIZE_GUIDE_STEPS } from '../../data/configurator';
 import PanelHeader from './PanelHeader';
 
-export default function SizeStep({ selected, onSelect, onBack, onNext }) {
+export default function SizeStep({ ring, selected, onSelect, onBack, onNext }) {
+  // Sizes offered for the chosen ring (GET /configurator); all sizes as a fallback.
+  const sizes = ring?.sizes?.length ? ring.sizes : CONFIG_SIZES;
   return (
     <div className="conf-panel active">
       <PanelHeader title="Select Your Ring Size" subtitle="US sizes. Complimentary resize within 60 days of delivery." />
       <div className="conf-size-layout">
         <div>
           <div className="conf-size-grid">
-            {CONFIG_SIZES.map((size) => (
-              <button key={size} className={`csz-btn${selected === size ? ' sel' : ''}`} onClick={() => onSelect(size)}>
+            {sizes.map((size) => (
+              <button key={size} className={`csz-btn${String(selected) === String(size) ? ' sel' : ''}`} onClick={() => onSelect(size)}>
                 {size}
               </button>
             ))}

@@ -1,12 +1,7 @@
 import { Link } from 'react-router-dom';
 import PageHero from '../../components/common/PageHero';
+import { SERVICES } from '../../data/site';
 
-const SERVICES = [
-  { icon: '◎', title: 'Ring Resizing', text: 'Free resize within 60 days of delivery. Send your ring back, we return it in 7-10 days.', note: 'Free for 60 days' },
-  { icon: '✎', title: 'Engraving', text: 'Names, dates or short messages hand-engraved inside your band. Available on sizes 5 and above.', note: 'Complimentary on rings' },
-  { icon: '✦', title: 'Jewelry Repairs', text: 'Prong re-tipping, stone tightening, polishing and chain repair by our master artisans.', note: 'Quote within 48 hours' },
-  { icon: '♦', title: 'Custom Design', text: 'Build your own ring with a setting, size and gemstone, priced on today’s gold rate.', note: 'Design Your Ring', to: '/design-your-ring' },
-];
 
 export default function ServicesPage() {
   return (

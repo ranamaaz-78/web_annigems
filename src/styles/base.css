@@ -32,3 +32,33 @@ ul{list-style:none}
 .bc-lk{cursor:pointer;transition:color var(--tr)}
 .bc-lk:hover{color:var(--gold-lt)}
 .bc-sep{color:var(--gold-dk)}
+
+/* Start-up state while store content loads from the API */
+.boot-state {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 24px;
+  text-align: center;
+  background: var(--bg, #0d0b08);
+  color: var(--t1, #f5efe2);
+}
+.boot-mark {
+  font-size: 32px;
+  color: var(--gold, #c9a84c);
+  animation: boot-pulse 1.2s ease-in-out infinite;
+}
+.boot-title {
+  font-size: 20px;
+}
+.boot-text {
+  color: var(--t2, #b9ae9a);
+  max-width: 420px;
+}
+@keyframes boot-pulse {
+  0%, 100% { opacity: 0.35; transform: scale(0.92); }
+  50% { opacity: 1; transform: scale(1); }
+}

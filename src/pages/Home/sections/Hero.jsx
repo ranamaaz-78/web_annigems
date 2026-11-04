@@ -1,7 +1,8 @@
 import { useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { BRAND } from '../../../data/site';
+import { BRAND, HOME } from '../../../data/site';
 import { gsap, prefersReducedMotion, ScrollTrigger, SplitText, useGSAP } from '../../../lib/gsap';
+import { splitFirstSentence } from '../../../utils/text';
 
 export default function Hero() {
   const root = useRef(null);
@@ -38,29 +39,35 @@ export default function Hero() {
     { scope: root },
   );
 
+  // Copy and image are managed in the admin (GET /home -> hero).
+  const hero = HOME.hero ?? {};
+  const image = hero.image || '/images/hero_banner_user.jpg';
+  const [textLine1, textLine2] = splitFirstSentence(hero.text || 'Bespoke rings, necklaces, earrings and bracelets crafted in 18K gold. Every piece tells a story. Every stone speaks in colour.');
+  const cta = hero.primaryCta ?? { label: 'Shop Collection', to: '/shop' };
+
   return (
     <section className="hero" ref={root}>
       <div className="hero-img-wrap">
         {/* Same image in both themes; CSS swaps visibility and overlay per theme */}
-        <img className="hero-banner hero-banner-dark" src="/images/hero_banner_user.jpg" alt={`${BRAND.name} fine jewelry`} />
-        <img className="hero-banner hero-banner-light" src="/images/hero_banner_user.jpg" alt="" aria-hidden="true" />
+        <img className="hero-banner hero-banner-dark" src={image} alt={`${BRAND.name} fine jewelry`} />
+        <img className="hero-banner hero-banner-light" src={image} alt="" aria-hidden="true" />
         <div className="hero-grad" />
       </div>
       <div className="hero-content">
-        <span className="hero-ey">Handcrafted Fine Jewelry · Since {BRAND.since}</span>
+        <span className="hero-ey">{(hero.eyebrow || 'Handcrafted Fine Jewelry · Since {since}').replace('{since}', BRAND.since)}</span>
         <h1 className="hero-h1">
-          Where Gold
+          {hero.titleLine1 || 'Where Gold'}
           <br />
-          <em>Meets Artistry</em>
+          <em>{hero.titleLine2 || 'Meets Artistry'}</em>
         </h1>
         <p className="hero-p">
-          Bespoke rings, necklaces, earrings and bracelets crafted in 18K gold.
-          <br />
-          Every piece tells a story. Every stone speaks in colour.
+          {textLine1}
+          {textLine2 && <br />}
+          {textLine2}
         </p>
         <div className="hero-ctas">
-          <Link className="btn-gold" to="/shop" data-magnetic>
-            Shop Collection
+          <Link className="btn-gold" to={cta.to || '/shop'} data-magnetic>
+            {cta.label || 'Shop Collection'}
           </Link>
           <Link className="btn-outline" to="/design-your-ring" data-magnetic>
             Design Your Ring

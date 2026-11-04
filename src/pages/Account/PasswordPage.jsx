@@ -10,10 +10,11 @@ export default function PasswordPage() {
   const [form, setForm] = useState({ current: '', next: '', confirm: '' });
   const [errors, setErrors] = useState({});
   const needsCurrent = user.provider !== 'google';
+  const [busy, setBusy] = useState(false);
 
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const errs = {
       current: needsCurrent && !form.current ? 'Enter your current password.' : '',
@@ -21,8 +22,10 @@ export default function PasswordPage() {
       confirm: form.confirm === form.next ? '' : 'Passwords do not match.',
     };
     if (!hasErrors(errs)) {
-      const res = changePassword(form.current, form.next);
-      if (!res.ok) errs.current = res.error;
+      setBusy(true);
+      const res = await changePassword(form.current, form.next);
+      setBusy(false);
+      if (!res.ok) errs[needsCurrent ? 'current' : 'next'] = res.error;
     }
     setErrors(errs);
     if (!hasErrors(errs)) {
@@ -39,7 +42,7 @@ export default function PasswordPage() {
         {needsCurrent && <PasswordField id="pw-current" label="Current Password" value={form.current} onChange={set('current')} error={errors.current} />}
         <PasswordField id="pw-next" label="New Password" value={form.next} onChange={set('next')} error={errors.next} showStrength />
         <PasswordField id="pw-confirm" label="Confirm New Password" value={form.confirm} onChange={set('confirm')} error={errors.confirm} />
-        <button type="submit" className="btn-gold">
+        <button type="submit" className="btn-gold" disabled={busy}>
           Update Password
         </button>
       </form>

@@ -1,20 +1,23 @@
 import { useState } from 'react';
 import FormField from '../../components/common/FormField';
 import PageHero from '../../components/common/PageHero';
-import { CONTACT } from '../../data/site';
+import { api, errorText } from '../../api/client';
+import { CONTACT, CONTACT_TOPICS } from '../../data/site';
 import { useUI } from '../../hooks/useUI';
 import { hasErrors, validateEmail, validateRequired } from '../../utils/validate';
 
-const TOPICS = ['Order enquiry', 'Custom / bespoke ring', 'Repairs & resizing', 'Gold & gemstone advice', 'Other'];
+// Topics are managed in the admin (GET /bootstrap -> contact_topics).
+const TOPICS = CONTACT_TOPICS;
 
 export default function ContactPage() {
   const { showToast } = useUI();
   const [form, setForm] = useState({ name: '', email: '', topic: TOPICS[0], message: '' });
   const [errors, setErrors] = useState({});
+  const [busy, setBusy] = useState(false);
 
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const errs = {
       name: validateRequired(form.name, 'Name'),
@@ -22,9 +25,19 @@ export default function ContactPage() {
       message: form.message.trim().length >= 10 ? '' : 'Please write at least 10 characters.',
     };
     setErrors(errs);
-    if (hasErrors(errs)) return;
-    setForm({ name: '', email: '', topic: TOPICS[0], message: '' });
-    showToast('Message sent — we will reply within 24 hours');
+    if (hasErrors(errs) || busy) return;
+    setBusy(true);
+    try {
+      await api('contact', { method: 'POST', body: { name: form.name.trim(), email: form.email.trim(), topic: form.topic || null, message: form.message.trim() } });
+      setForm({ name: '', email: '', topic: TOPICS[0], message: '' });
+      showToast('Message sent — we will reply within 24 hours');
+    } catch (err) {
+      const fieldErrors = err.errors ?? {};
+      if (Object.keys(fieldErrors).length) setErrors(Object.fromEntries(Object.entries(fieldErrors).map(([k, v]) => [k, v[0]])));
+      else showToast(errorText(err));
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -50,8 +63,8 @@ export default function ContactPage() {
               ))}
             </FormField>
             <FormField id="ct-message" name="message" label="Message" as="textarea" rows={6} placeholder="How can we help?" value={form.message} onChange={set('message')} error={errors.message} />
-            <button type="submit" className="btn-gold" data-magnetic>
-              Send Message
+            <button type="submit" className="btn-gold" data-magnetic disabled={busy}>
+              {busy ? 'Sending…' : 'Send Message'}
             </button>
           </div>
         </form>

@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Stars from '../../components/common/Stars';
-import { RING_SIZES } from '../../data/products';
 import { CARE_INSTRUCTIONS, SHIPPING_POLICY } from '../../data/site';
 import { useShop } from '../../hooks/useShop';
 import { usePricing } from '../../hooks/usePricing';
@@ -18,7 +17,9 @@ export default function ProductInfo({ product }) {
   const { productPrice } = usePricing();
   const { price, retail, isB2B } = productPrice(product);
   const [size, setSize] = useState(null);
-  const isRing = product.category === 'rings';
+  // Sized products (rings) need a size; the sizes come from the API.
+  const isRing = Boolean(product.hasSizes);
+  const sizes = product.sizes ?? [];
 
   const handleAddToCart = () => {
     if (!product.inStock) return;
@@ -77,7 +78,7 @@ export default function ProductInfo({ product }) {
             </Link>
           </div>
           <div className="size-grid">
-            {RING_SIZES.map((s) => (
+            {sizes.map((s) => (
               <button key={s} className={`size-btn${size === s ? ' active' : ''}`} onClick={() => setSize(s)}>
                 {s}
               </button>

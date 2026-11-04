@@ -23,7 +23,7 @@ export default function RingStep({ selected, onSelect }) {
                   <p className="crc-name">{ring.name}</p>
                   <p className="crc-type">{ring.type}</p>
                 </div>
-                <span className="crc-badge">18K Gold</span>
+                <span className="crc-badge">{ring.karat}K Gold</span>
               </div>
               <p className="crc-desc">{ring.description}</p>
               <div className="crc-specs">

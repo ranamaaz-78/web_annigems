@@ -28,7 +28,7 @@ export default function ProductCard({ product, showCategory = false }) {
   const handleAddToCart = () => {
     if (outOfStock) return;
     // Rings need a size, which is picked on the product page
-    if (product.category === 'rings') {
+    if (product.hasSizes) {
       navigate(productUrl);
       showToast('Please select a ring size first');
       return;

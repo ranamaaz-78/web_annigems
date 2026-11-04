@@ -5,17 +5,18 @@ import { useAuth } from '../../hooks/useAuth';
 import { useUI } from '../../hooks/useUI';
 import { hasErrors, validatePhone, validateRequired } from '../../utils/validate';
 
-const EMPTY = { label: 'Home', name: '', line1: '', city: '', state: '', zip: '', country: COUNTRIES[0], phone: '', isDefault: false };
+const EMPTY = { label: 'Home', name: '', line1: '', city: '', state: '', zip: '', country: '', phone: '', isDefault: false };
 
 export default function AddressesPage() {
   const { user, saveAddress, deleteAddress } = useAuth();
   const { showToast } = useUI();
   const [editing, setEditing] = useState(null); // address object or EMPTY
   const [errors, setErrors] = useState({});
+  const [busy, setBusy] = useState(false);
 
   const set = (key) => (e) => setEditing((a) => ({ ...a, [key]: e.target.value }));
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const errs = {
       name: validateRequired(editing.name, 'Full name'),
@@ -26,9 +27,12 @@ export default function AddressesPage() {
     };
     setErrors(errs);
     if (hasErrors(errs)) return;
-    saveAddress(editing);
+    setBusy(true);
+    const res = await saveAddress(editing);
+    setBusy(false);
+    if (!res.ok) return setErrors({ line1: res.error });
     setEditing(null);
-    showToast('Address saved');
+    return showToast('Address saved');
   };
 
   return (
@@ -36,7 +40,7 @@ export default function AddressesPage() {
       <div className="acct-head">
         <h3 className="cs-title">Saved addresses</h3>
         {!editing && (
-          <button className="btn-outline btn-sm" onClick={() => setEditing({ ...EMPTY, name: `${user.firstName} ${user.lastName}` })}>
+          <button className="btn-outline btn-sm" onClick={() => setEditing({ ...EMPTY, country: COUNTRIES[0], name: `${user.firstName} ${user.lastName}` })}>
             + Add address
           </button>
         )}
@@ -66,7 +70,7 @@ export default function AddressesPage() {
             <input type="checkbox" checked={editing.isDefault} onChange={(e) => setEditing((a) => ({ ...a, isDefault: e.target.checked }))} /> Make this my default address
           </label>
           <div className="co-btns">
-            <button type="submit" className="btn-gold">
+            <button type="submit" className="btn-gold" disabled={busy}>
               Save Address
             </button>
             <button type="button" className="btn-ghost" onClick={() => setEditing(null)}>
@@ -105,9 +109,9 @@ export default function AddressesPage() {
                 </button>
                 <button
                   className="auth-link"
-                  onClick={() => {
-                    deleteAddress(a.id);
-                    showToast('Address removed');
+                  onClick={async () => {
+                    const res = await deleteAddress(a.id);
+                    showToast(res.ok ? 'Address removed' : res.error);
                   }}
                 >
                   Delete

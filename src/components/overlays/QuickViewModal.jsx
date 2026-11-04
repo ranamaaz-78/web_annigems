@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getProductById } from '../../data/products';
+import { api } from '../../api/client';
+import { getProductById, upsertProduct } from '../../data/products';
 import { useShop } from '../../hooks/useShop';
 import { usePricing } from '../../hooks/usePricing';
 import { useUI } from '../../hooks/useUI';
@@ -13,7 +15,25 @@ export default function QuickViewModal() {
   const { addToCart } = useShop();
   const navigate = useNavigate();
   const { productPrice } = usePricing();
+  const [, setLoaded] = useState(null);
   const product = quickViewId ? getProductById(quickViewId) : null;
+  const needsDetail = Boolean(product) && !product.detailed;
+
+  // The description is only in the product detail (GET /products/{id}).
+  useEffect(() => {
+    if (!needsDetail) return undefined;
+    let cancelled = false;
+    api(`products/${encodeURIComponent(quickViewId)}`)
+      .then((res) => {
+        if (cancelled) return;
+        upsertProduct(res.data);
+        setLoaded(quickViewId);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [quickViewId, needsDetail]);
 
   const goTo = (path) => {
     close();
@@ -23,7 +43,7 @@ export default function QuickViewModal() {
   const handleAddToCart = () => {
     if (!product.inStock) return;
     // Rings need a size, chosen on the product page
-    if (product.category === 'rings') {
+    if (product.hasSizes) {
       goTo(`/product/${product.id}`);
       showToast('Please select a ring size first');
       return;

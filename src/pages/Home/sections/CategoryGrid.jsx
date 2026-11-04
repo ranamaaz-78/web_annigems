@@ -1,11 +1,15 @@
 import { Link } from 'react-router-dom';
 import SectionHeader from '../../../components/common/SectionHeader';
 import { CATEGORIES } from '../../../data/catalog';
+import { HOME } from '../../../data/site';
 
 export default function CategoryGrid() {
   return (
     <section className="section">
-      <SectionHeader title="Shop by Category" subtitle="From everyday elegance to once-in-a-lifetime pieces" />
+      <SectionHeader
+        title={HOME.categorySection?.title || 'Shop by Category'}
+        subtitle={HOME.categorySection?.subtitle || 'From everyday elegance to once-in-a-lifetime pieces'}
+      />
       <div className="cats-grid" data-stagger=".cat-card">
         {CATEGORIES.map((cat) => (
           <Link className="cat-card" key={cat.id} to={`/shop?cat=${cat.id}`}>

@@ -1,5 +1,5 @@
 import { CATEGORIES, MAX_PRICE, STONE_FILTERS } from '../../data/catalog';
-import { formatPrice } from '../../utils/format';
+import { formatPrice, formatPriceRounded } from '../../utils/format';
 
 const CATEGORY_OPTIONS = [{ id: 'all', label: 'All Jewelry' }, ...CATEGORIES];
 
@@ -30,8 +30,8 @@ export default function ShopSidebar({ category, maxPrice, stones, onCategory, on
           aria-label="Maximum price"
         />
         <div className="price-labels">
-          <span>$0</span>
-          <span>{maxPrice >= MAX_PRICE ? '$5,000+' : formatPrice(maxPrice)}</span>
+          <span>{formatPriceRounded(0)}</span>
+          <span>{maxPrice >= MAX_PRICE ? `${formatPriceRounded(MAX_PRICE)}+` : formatPrice(maxPrice)}</span>
         </div>
       </div>
 

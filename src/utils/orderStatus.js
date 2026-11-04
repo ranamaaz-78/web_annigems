@@ -14,9 +14,18 @@ const PAYMENT_LABELS = {
   credit_requested: 'Credit Under Review',
 };
 
+// Retail order payment states from the API; fulfilment stages apply once paid.
+const RETAIL_STATUS = {
+  pending_payment: { label: 'Payment Pending', tone: 'warn' },
+  payment_failed: { label: 'Payment Failed', tone: 'bad' },
+  cancelled: { label: 'Cancelled', tone: 'bad' },
+  refunded: { label: 'Refunded', tone: 'info' },
+};
+
 // { label, tone } shown in status badges. tone: '' | 'done' | 'warn' | 'bad' | 'info'
 export const orderStatus = (order) => {
   if (!isB2BOrder(order)) {
+    if (RETAIL_STATUS[order.status]) return RETAIL_STATUS[order.status];
     const last = ORDER_STAGES.length - 1;
     return { label: ORDER_STAGES[order.stage]?.label ?? 'Processing', tone: order.stage >= last ? 'done' : '' };
   }

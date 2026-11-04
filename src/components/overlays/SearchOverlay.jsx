@@ -1,12 +1,14 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { api } from '../../api/client';
 import { useNavigate } from 'react-router-dom';
-import { PRODUCTS } from '../../data/products';
+import { mergeProducts } from '../../data/products';
 import { usePricing } from '../../hooks/usePricing';
 import { useUI } from '../../hooks/useUI';
 import { formatPrice } from '../../utils/format';
 import { SearchIcon } from '../common/Icons';
 
 const MAX_RESULTS = 6;
+const SEARCH_DELAY_MS = 200;
 
 export default function SearchOverlay() {
   const { overlay, close } = useUI();
@@ -22,14 +24,27 @@ export default function SearchOverlay() {
     return () => clearTimeout(t);
   }, [open]);
 
-  // Filters the static catalogue in-memory
-  const results = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return [];
-    return PRODUCTS.filter(
-      (p) => p.name.toLowerCase().includes(q) || p.category.includes(q) || p.tags.some((t) => t.includes(q)),
-    ).slice(0, MAX_RESULTS);
-  }, [query]);
+  // Quick search on the API (GET /search?q=), debounced while typing.
+  const [found, setFound] = useState({ q: '', items: [] });
+  const term = query.trim();
+
+  useEffect(() => {
+    if (!term) return undefined;
+    const controller = new AbortController();
+    const t = setTimeout(() => {
+      api(`search?q=${encodeURIComponent(term)}`, { signal: controller.signal })
+        .then((res) => setFound({ q: term, items: mergeProducts(res.data).slice(0, MAX_RESULTS) }))
+        .catch(() => {});
+    }, SEARCH_DELAY_MS);
+    return () => {
+      clearTimeout(t);
+      controller.abort();
+    };
+  }, [term]);
+
+  // Previous results stay visible while the next request is in flight.
+  const results = term ? found.items : [];
+  const searched = found.q === term;
 
   const dismiss = () => {
     setQuery('');
@@ -61,7 +76,7 @@ export default function SearchOverlay() {
       {query.trim() && (
         <div className="search-results">
           {results.length === 0 ? (
-            <div className="sr-empty">No results found</div>
+            searched && <div className="sr-empty">No results found</div>
           ) : (
             results.map((p) => (
               <button className="sr-item" key={p.id} onClick={() => openProduct(p.id)}>

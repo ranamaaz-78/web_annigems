@@ -1,16 +1,23 @@
 # AANI GEMAS — Web Frontend
 
-A static React + Vite frontend for the AANI GEMAS jewelry store, built from the
+A React + Vite storefront for the AANI GEMAS jewelry store, built from the
 reference design in [`referenece_design/`](./referenece_design).
 
-**Frontend only.** There are no APIs, no backend, and no persisted data. All content
-comes from files in `src/data/`. Cart and wishlist live in memory so the design's
-interactions work, and they reset when the page reloads. Forms (sign in, newsletter,
-checkout) only show the UI flow.
+**Connected to the Web Portal API** (`/api/v1/web/*` of the AANI GEMAS backend).
+At start-up the store loads its content (settings, navigation, home, catalogue,
+configurator, FAQs, policies, about, services) and keeps it in the `src/data/` modules, so
+components read it as before. Prices, cart totals, coupons and shipping come from the
+API (`POST /cart/quote`). Accounts, addresses, wishlist, orders, contact and newsletter use
+their endpoints. Checkout creates the order with `POST /checkout` and confirms the card
+payment with Stripe.
+
+**Not connected:** the Business (B2B) module still runs on local demo data
+(`src/data/b2b.js`), because its API has not been built yet.
 
 ## Getting started
 
 ```bash
+cp .env.example .env   # VITE_API_URL = the backend (php artisan serve -> http://localhost:8000)
 npm install
 npm run dev       # http://localhost:5173
 npm run build     # production build in dist/
@@ -23,15 +30,16 @@ npm run lint      # oxlint
 ```
 public/images/            Product, banner and logo images
 src/
-  main.jsx                Entry: router + providers + global styles
+  main.jsx                Entry: loads the store from the API, then router + providers + styles
+  api/                    API client (token, currency, errors), response mappers, boot hydration, Stripe
   App.jsx                 Route table
-  data/                   All static content (edit text/prices/products here)
-    products.js           Product catalogue, featured / new-arrival ids, ring sizes
+  data/                   Content stores, filled from the API at start-up (edit content in the admin)
+    products.js           Product catalogue, featured / new-arrival ids
     catalog.js            Categories, badges, filters, sort options
     configurator.js       Rings, stones, sizes and size chart for "Design Your Ring"
     testimonials.js       Testimonials and product reviews
     site.js               Brand, navigation, footer, shipping, payment, gold rate
-  context/                Providers: theme, shop (cart/wishlist), UI (overlays/toast)
+  context/                Providers: auth (account, orders), shop (cart/quote/wishlist), B2B, theme, UI
   hooks/                  useTheme, useShop, useUI, useScrolled, useWishlistToggle
   utils/                  Formatting, pricing and cart helpers
   components/
@@ -58,7 +66,9 @@ src/
 | `/product/:id` | Product detail |
 | `/design-your-ring` | Ring configurator |
 | `/wishlist` | Wishlist |
-| `/checkout` | Checkout |
+| `/checkout` | Checkout (sign-in required; card payment via Stripe) |
+| `/track-order` | Order tracking (sign-in required) |
+| `/account/*` | Profile, orders, addresses, password, wishlist |
 
 ## Theming
 

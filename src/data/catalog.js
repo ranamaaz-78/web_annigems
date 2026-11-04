@@ -1,11 +1,11 @@
-// Categories, badges, filters and other static catalogue metadata.
+// Categories, badges, filters and sort options.
+// Live store: filled from GET /bootstrap and GET /home at start-up.
 
-export const CATEGORIES = [
-  { id: 'rings', label: 'Rings', image: '/images/ring1_plain.jpg', count: 6 },
-  { id: 'necklaces', label: 'Necklaces', image: '/images/cat_necklaces.jpg', count: 8 },
-  { id: 'earrings', label: 'Earrings', image: '/images/cat_earrings.jpg', count: 10 },
-  { id: 'bracelets', label: 'Bracelets', image: '/images/cat_bracelets.jpg', count: 5 },
-];
+import { major, mapCategory } from '../api/mappers';
+
+const fill = (target, items) => target.splice(0, target.length, ...(items ?? []));
+
+export const CATEGORIES = [];
 
 export const BADGE_CLASS = {
   Bestseller: 'b-best',
@@ -15,14 +15,13 @@ export const BADGE_CLASS = {
   Iconic: 'b-icon',
 };
 
-export const STONE_FILTERS = ['Diamond', 'Ruby', 'Sapphire', 'Emerald', 'No Stone'];
+export const STONE_FILTERS = [];
+export const SORT_OPTIONS = [];
+export let MAX_PRICE = 5000;
 
-export const SORT_OPTIONS = [
-  { value: 'featured', label: 'Featured' },
-  { value: 'price-asc', label: 'Price: Low to High' },
-  { value: 'price-desc', label: 'Price: High to Low' },
-  { value: 'rating', label: 'Top Rated' },
-  { value: 'newest', label: 'Newest' },
-];
-
-export const MAX_PRICE = 5000;
+export function hydrateCatalog(bootstrap, categories) {
+  fill(STONE_FILTERS, bootstrap.catalog?.stone_filters);
+  fill(SORT_OPTIONS, bootstrap.catalog?.sort_options);
+  MAX_PRICE = major(bootstrap.catalog?.max_price) || MAX_PRICE;
+  fill(CATEGORIES, (categories ?? []).map(mapCategory));
+}

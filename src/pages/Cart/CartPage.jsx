@@ -2,23 +2,22 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import EmptyState from '../../components/common/EmptyState';
 import PageHero from '../../components/common/PageHero';
-import { COUNTRIES, FREE_SHIPPING_THRESHOLD, SHIPPING_METHODS, TAX_RATE } from '../../data/site';
+import { COUNTRIES, FREE_SHIPPING_THRESHOLD, TAX_RATE } from '../../data/site';
 import { useShop } from '../../hooks/useShop';
 import { usePricing } from '../../hooks/usePricing';
 import { useUI } from '../../hooks/useUI';
 import { formatPrice } from '../../utils/format';
-import { orderTotals, shippingCost } from '../../utils/pricing';
 
 export default function CartPage() {
-  const { cart, cartSubtotal, discount, couponCode, coupon, changeQty, removeFromCart, applyCoupon, removeCoupon } = useShop();
+  const { cart, totals, discount, couponCode, coupon, changeQty, removeFromCart, applyCoupon, removeCoupon, shippingMethod: method, setShippingMethod: setMethod, shippingOptions, freeShippingRemaining, quoteError } = useShop();
   const { showToast } = useUI();
   const { isB2B } = usePricing();
   const [code, setCode] = useState('');
   const [couponError, setCouponError] = useState('');
-  const [method, setMethod] = useState('standard');
   const [country, setCountry] = useState(COUNTRIES[0]);
   const [pin, setPin] = useState('');
   const [estimate, setEstimate] = useState(null);
+  const [applying, setApplying] = useState(false);
 
   const crumbs = [{ label: 'Home', to: '/' }, { label: 'Cart' }];
 
@@ -31,13 +30,16 @@ export default function CartPage() {
     );
   }
 
-  const totals = orderTotals(cartSubtotal, method, discount);
-  const remaining = Math.max(0, FREE_SHIPPING_THRESHOLD - (cartSubtotal - discount));
-  const progress = Math.min(100, ((cartSubtotal - discount) / FREE_SHIPPING_THRESHOLD) * 100);
+  const remaining = freeShippingRemaining ?? Math.max(0, FREE_SHIPPING_THRESHOLD - (totals.subtotal - discount));
+  const progress = FREE_SHIPPING_THRESHOLD > 0 ? Math.min(100, ((FREE_SHIPPING_THRESHOLD - remaining) / FREE_SHIPPING_THRESHOLD) * 100) : 100;
+  const taxRate = totals.taxRate ?? TAX_RATE;
 
-  const handleCoupon = (e) => {
+  const handleCoupon = async (e) => {
     e.preventDefault();
-    const res = applyCoupon(code);
+    if (applying) return undefined;
+    setApplying(true);
+    const res = await applyCoupon(code);
+    setApplying(false);
     if (!res.ok) return setCouponError(res.error);
     setCouponError('');
     setCode('');
@@ -47,12 +49,7 @@ export default function CartPage() {
   const handleEstimate = (e) => {
     e.preventDefault();
     if (pin.trim().length < 4) return setEstimate({ error: 'Enter a valid PIN / ZIP code.' });
-    const international = country !== 'India';
-    return setEstimate({
-      error: '',
-      options: SHIPPING_METHODS.map((m) => ({ ...m, cost: shippingCost(m.id, cartSubtotal - discount) + (international ? 20 : 0) })),
-      international,
-    });
+    return setEstimate({ error: '', country });
   };
 
   return (
@@ -88,6 +85,7 @@ export default function CartPage() {
                   {item.name}
                 </Link>
                 <p className="cl-sub">{item.subtitle}</p>
+                {item.errors?.length > 0 && <p className="field-error">{item.errors[0]}</p>}
                 <div>
                   {item.meta.size && <span className="ci-tag">Size {item.meta.size}</span>}
                   {item.meta.stone && <span className="ci-tag">{item.meta.stone}</span>}
@@ -126,8 +124,8 @@ export default function CartPage() {
               <>
             <form className="coupon-form" onSubmit={handleCoupon}>
               <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="Coupon code (try AANI10)" aria-label="Coupon code" />
-              <button type="submit" className="btn-outline btn-sm">
-                Apply
+              <button type="submit" className="btn-outline btn-sm" disabled={applying}>
+                {applying ? '…' : 'Apply'}
               </button>
             </form>
             {couponError && <p className="field-error">{couponError}</p>}
@@ -159,7 +157,7 @@ export default function CartPage() {
                 <span>{totals.shipping === 0 ? 'Free' : formatPrice(totals.shipping)}</span>
               </div>
               <div className="cs-row">
-                <span>Tax ({TAX_RATE * 100}%)</span>
+                <span>Tax ({Math.round(taxRate * 10000) / 100}%)</span>
                 <span>{formatPrice(totals.tax)}</span>
               </div>
             </div>
@@ -167,6 +165,7 @@ export default function CartPage() {
               <span>Total</span>
               <span className="cs-total-val">{formatPrice(totals.total)}</span>
             </div>
+            {quoteError && <p className="field-error">{quoteError}</p>}
             <Link to="/checkout" className="btn-gold btn-full" data-magnetic>
               {isB2B ? 'Submit for Approval →' : 'Proceed to Checkout →'}
             </Link>
@@ -192,9 +191,9 @@ export default function CartPage() {
               </button>
             </form>
             {estimate?.error && <p className="field-error">{estimate.error}</p>}
-            {estimate?.options && (
+            {estimate && !estimate.error && shippingOptions.length > 0 && (
               <ul className="est-list">
-                {estimate.options.map((o) => (
+                {shippingOptions.map((o) => (
                   <li key={o.id}>
                     <label>
                       <input type="radio" name="est" checked={method === o.id} onChange={() => setMethod(o.id)} />
@@ -205,7 +204,6 @@ export default function CartPage() {
                     </label>
                   </li>
                 ))}
-                {estimate.international && <li className="est-note">Includes $20 international handling.</li>}
               </ul>
             )}
           </div>

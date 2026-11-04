@@ -1,4 +1,4 @@
-import { CONFIG_STONES } from '../../data/configurator';
+import { stonesForRing } from '../../data/configurator';
 import { GOLD_RATE } from '../../data/site';
 import { formatPrice } from '../../utils/format';
 import { goldValue } from '../../utils/pricing';
@@ -29,7 +29,7 @@ export default function StoneStep({ ring, size, selected, onSelect, onChangeRing
       </div>
 
       <div className="stone-grid">
-        {CONFIG_STONES.map((stone) => (
+        {stonesForRing(ring).map((stone) => (
           <button
             key={stone.id}
             className={`sc${selected?.id === stone.id ? ' sel' : ''}`}

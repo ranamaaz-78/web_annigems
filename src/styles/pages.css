@@ -296,3 +296,7 @@
 .status-badge.warn{color:#e0a030;border-color:rgba(224,160,48,.45);background:rgba(224,160,48,.08)}
 .status-badge.bad{color:#e74c3c;border-color:rgba(231,76,60,.4);background:rgba(231,76,60,.08)}
 .status-badge.info{color:#4aa3e8;border-color:rgba(74,163,232,.4);background:rgba(74,163,232,.08)}
+/* Stripe card fields: same look as the inputs around them */
+.stripe-field{background:var(--bg2);border:1px solid var(--bdr);border-radius:var(--r);padding:13px 14px;min-height:45px;transition:border-color var(--tr)}
+.stripe-field.StripeElement--focus{border-color:var(--gold)}
+.form-field.has-error .stripe-field,.stripe-field.StripeElement--invalid{border-color:#e74c3c}

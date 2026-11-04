@@ -1,19 +1,62 @@
+import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { api, errorText } from '../../api/client';
 import OrderStatusBadge from '../../components/common/OrderStatusBadge';
 import Timeline from '../../components/common/Timeline';
+import { CONFIG_RINGS, CONFIG_STONES } from '../../data/configurator';
+import { getProductById } from '../../data/products';
 import { SHIPPING_METHODS } from '../../data/site';
 import { useAuth } from '../../hooks/useAuth';
 import { useShop } from '../../hooks/useShop';
 import { useUI } from '../../hooks/useUI';
+import { productCartItem } from '../../utils/cart';
 import { formatDate, formatPrice } from '../../utils/format';
+
+// A reorder line from the API -> a cart line (same shape the product page and configurator add).
+function toCartLine(line, order) {
+  if (line.type === 'product') {
+    const product = getProductById(line.legacy_id) ?? getProductById(line.product_id);
+    if (!product) return null;
+    return { ...productCartItem(product, line.size ?? null), qty: line.qty };
+  }
+  const ring = CONFIG_RINGS.find((r) => r.id === line.ring_id);
+  const stone = CONFIG_STONES.find((st) => st.id === line.stone_id);
+  if (!ring || !stone) return null;
+  const past = order.items.find((i) => i.ringId === line.ring_id && i.stoneId === line.stone_id);
+  return {
+    key: `conf-${ring.id}-${stone.id}-${line.size}`,
+    id: `conf-${ring.id}-${stone.id}-${line.size}`,
+    kind: 'config',
+    ringId: ring.id,
+    stoneId: stone.id,
+    name: past?.name ?? `${ring.name} with ${stone.name}`,
+    subtitle: past?.subtitle ?? '',
+    price: past?.price ?? 0,
+    image: stone.images?.[ring.id] ?? ring.image,
+    meta: { size: line.size, stone: stone.name, ring: ring.name },
+    qty: line.qty,
+  };
+}
 
 export default function OrderDetailPage() {
   const { id } = useParams();
-  const { myOrders } = useAuth();
+  const { myOrders, isB2B, fetchOrder } = useAuth();
   const { addToCart } = useShop();
   const { showToast } = useUI();
   const navigate = useNavigate();
   const order = myOrders.find((o) => o.id === id);
+  const [lookedUp, setLookedUp] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  // Refresh the order from the API (status, tracking, timeline).
+  useEffect(() => {
+    if (isB2B) return;
+    fetchOrder(id)
+      .catch(() => {})
+      .finally(() => setLookedUp(true));
+  }, [id, isB2B, fetchOrder]);
+
+  if (!order && !isB2B && !lookedUp) return null;
 
   if (!order) {
     return (
@@ -27,14 +70,38 @@ export default function OrderDetailPage() {
     );
   }
 
-  const method = SHIPPING_METHODS.find((m) => m.id === order.shippingMethod);
+  const method = order.shippingMethodName ? { name: order.shippingMethodName } : SHIPPING_METHODS.find((m) => m.id === order.shippingMethod);
 
-  const reorder = () => {
-    order.items.forEach((item) => {
-      for (let i = 0; i < item.qty; i += 1) addToCart({ ...item, qty: undefined });
-    });
-    showToast('Items added to cart');
-    navigate('/cart');
+  const addLines = (lines) => lines.forEach((line) => {
+    for (let i = 0; i < line.qty; i += 1) addToCart({ ...line, qty: undefined });
+  });
+
+  // Retail: POST /orders/{number}/reorder returns the still-available lines; B2B stays local.
+  const reorder = async () => {
+    if (isB2B) {
+      addLines(order.items);
+      showToast('Items added to cart');
+      navigate('/cart');
+      return;
+    }
+    if (busy) return;
+    setBusy(true);
+    try {
+      const res = await api(`orders/${encodeURIComponent(order.number)}/reorder`, { method: 'POST' });
+      const lines = res.data.items.map((line) => toCartLine(line, order)).filter(Boolean);
+      addLines(lines);
+      const skipped = res.data.unavailable ?? [];
+      if (!lines.length) {
+        showToast('These items are no longer available');
+        setBusy(false);
+        return;
+      }
+      showToast(skipped.length ? `Items added to cart (${skipped.length} no longer available)` : 'Items added to cart');
+      navigate('/cart');
+    } catch (err) {
+      setBusy(false);
+      showToast(errorText(err));
+    }
   };
 
   return (
@@ -96,8 +163,8 @@ export default function OrderDetailPage() {
             <span>Total</span>
             <span className="cs-total-val">{formatPrice(order.totals.total)}</span>
           </div>
-          <button className="btn-outline" onClick={reorder}>
-            Reorder
+          <button className="btn-outline" onClick={reorder} disabled={busy}>
+            {busy ? 'Adding…' : 'Reorder'}
           </button>
         </div>
 

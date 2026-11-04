@@ -13,9 +13,11 @@ export default function ProfilePage() {
   const [errors, setErrors] = useState({});
 
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
-  const spent = myOrders.reduce((s, o) => s + o.totals.total, 0);
+  // Only orders that were actually paid count (unpaid, failed and cancelled ones are left out; refunds are subtracted).
+  const UNPAID = ['pending_payment', 'payment_failed', 'cancelled'];
+  const spent = myOrders.filter((o) => !UNPAID.includes(o.status)).reduce((s, o) => s + o.totals.total - (o.totals.refunded || 0), 0);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const errs = {
       firstName: validateRequired(form.firstName, 'First name'),
@@ -24,8 +26,9 @@ export default function ProfilePage() {
     };
     setErrors(errs);
     if (hasErrors(errs)) return;
-    updateUser(form);
-    showToast('Profile updated');
+    const res = await updateUser(form);
+    if (!res.ok) return showToast(res.error);
+    return showToast('Profile updated');
   };
 
   return (
@@ -52,7 +55,7 @@ export default function ProfilePage() {
             <FormField id="pf-first" name="firstName" label="First Name" value={form.firstName} onChange={set('firstName')} error={errors.firstName} />
             <FormField id="pf-last" name="lastName" label="Last Name" value={form.lastName} onChange={set('lastName')} error={errors.lastName} />
           </div>
-          <FormField id="pf-email" label="Email" value={user.email} disabled hint={user.provider === 'google' ? 'Signed in with Google' : 'Email cannot be changed in this demo'} />
+          <FormField id="pf-email" label="Email" value={user.email} disabled hint={user.provider === 'google' ? 'Signed in with Google' : 'Email cannot be changed'} />
           <FormField id="pf-phone" name="phone" label="Phone" type="tel" value={form.phone} onChange={set('phone')} error={errors.phone} placeholder="+91 98765 43210" />
           <div className="co-btns">
             <button type="submit" className="btn-gold">

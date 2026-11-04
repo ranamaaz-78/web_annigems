@@ -1,6 +1,6 @@
 // Decorative gem swatch. Diamond uses the animated `.diamond` CSS style.
 export default function StoneGem({ stone }) {
-  if (stone.id === 'diamond') return <div className="sc-gem diamond" />;
+  if (stone.isDiamond) return <div className="sc-gem diamond" />;
   return (
     <div
       className="sc-gem"

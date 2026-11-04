@@ -1,13 +1,17 @@
-import { FREE_SHIPPING_THRESHOLD, GOLD_RATE, SHIPPING_METHODS, TAX_RATE } from '../data/site';
+import { FREE_SHIPPING_THRESHOLD, SHIPPING_METHODS, TAX_RATE } from '../data/site';
 
-// Value of the 18K gold in a configurator ring at the static display rate
-export const goldValue = (ring) => ring.goldWeightG * GOLD_RATE.purity18k * GOLD_RATE.perGram;
+// Retail prices come from the API (GET /configurator, POST /configurator/price, POST /cart/quote).
+// The local totals below are only used by the B2B preview module, which has no backend yet.
 
-export const configuratorTotal = (ring, stone) =>
-  Math.round((goldValue(ring) + ring.craftFee + stone.gemPrice) * 100) / 100;
+// Gold value of a configurator ring, priced by the API on the live gold rate.
+export const goldValue = (ring) => ring.goldValue;
+
+// Same sum the API uses: gold value + craft fee + stone, each already in the display currency.
+export const configuratorTotal = (ring, stone) => Math.round((ring.goldValue + ring.craftFee + stone.gemPrice) * 100) / 100;
 
 export const shippingCost = (methodId, subtotal) => {
   const method = SHIPPING_METHODS.find((m) => m.id === methodId) ?? SHIPPING_METHODS[0];
+  if (!method) return 0;
   if (method.freeOverThreshold && subtotal >= FREE_SHIPPING_THRESHOLD) return 0;
   return method.price;
 };
@@ -15,7 +19,7 @@ export const shippingCost = (methodId, subtotal) => {
 export const orderTotals = (subtotal, methodId, discount = 0) => {
   const taxable = subtotal - discount;
   const shipping = shippingCost(methodId, taxable);
-  const tax = taxable * TAX_RATE;
+  const tax = Math.round(taxable * TAX_RATE * 100) / 100;
   return { subtotal, discount, shipping, tax, total: taxable + shipping + tax };
 };
 

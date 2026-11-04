@@ -16,7 +16,9 @@ export default function ResetPasswordPage() {
 
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
-  const handleSubmit = (e) => {
+  const [busy, setBusy] = useState(false);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const errs = {
       email: validateEmail(form.email),
@@ -25,7 +27,9 @@ export default function ResetPasswordPage() {
       confirm: form.confirm === form.password ? '' : 'Passwords do not match.',
     };
     if (!hasErrors(errs)) {
-      const res = resetPassword(form.email, form.code, form.password);
+      setBusy(true);
+      const res = await resetPassword(form.email, form.code, form.password);
+      setBusy(false);
       if (!res.ok) errs.code = res.error;
     }
     setErrors(errs);
@@ -58,8 +62,8 @@ export default function ResetPasswordPage() {
         <FormField id="rp-code" name="code" label="6-digit Code" inputMode="numeric" maxLength={6} placeholder="123456" value={form.code} onChange={set('code')} error={errors.code} />
         <PasswordField id="rp-password" label="New Password" value={form.password} onChange={set('password')} error={errors.password} showStrength />
         <PasswordField id="rp-confirm" label="Confirm New Password" value={form.confirm} onChange={set('confirm')} error={errors.confirm} />
-        <button type="submit" className="btn-gold btn-full" data-magnetic>
-          Reset Password
+        <button type="submit" className="btn-gold btn-full" data-magnetic disabled={busy}>
+          {busy ? 'Resetting…' : 'Reset Password'}
         </button>
       </form>
     </AuthShell>

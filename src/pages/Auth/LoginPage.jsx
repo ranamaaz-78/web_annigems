@@ -17,17 +17,20 @@ export default function LoginPage() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState('');
+  const [busy, setBusy] = useState(false);
 
   if (isLoggedIn) return <Navigate to={next} replace />;
 
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const errs = { email: validateEmail(form.email), password: form.password ? '' : 'Password is required.' };
     setErrors(errs);
     if (errs.email || errs.password) return;
-    const res = login(form.email, form.password);
+    setBusy(true);
+    const res = await login(form.email, form.password);
+    setBusy(false);
     if (!res.ok) return setFormError(res.error);
     showToast('Signed in successfully!');
     return navigate(next, { replace: true });
@@ -70,13 +73,10 @@ export default function LoginPage() {
             Forgot password?
           </Link>
         </div>
-        <button type="submit" className="btn-gold btn-full" data-magnetic>
-          Sign In
+        <button type="submit" className="btn-gold btn-full" data-magnetic disabled={busy}>
+          {busy ? 'Signing in…' : 'Sign In'}
         </button>
       </form>
-      <p className="auth-demo">
-        Demo account: <strong>demo@aanigems.com</strong> / <strong>Demo@1234</strong>
-      </p>
     </AuthShell>
   );
 }

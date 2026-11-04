@@ -47,6 +47,8 @@ export default function ConfiguratorPage() {
       key,
       id: key,
       kind: 'config',
+      ringId: ring.id,
+      stoneId: stone.id,
       name: `${ring.name} x ${stone.name}`,
       subtitle: `Custom ${ring.setting} + ${stone.name}`,
       price: configuratorTotal(ring, stone),
@@ -82,12 +84,17 @@ export default function ConfiguratorPage() {
         <RingStep
           selected={ring}
           onSelect={(r) => {
+            if (ring?.id !== r.id) {
+              // Sizes and stones depend on the ring.
+              if (size != null && !r.sizes.map(String).includes(String(size))) setSize(null);
+              setStone(null);
+            }
             setRing(r);
             goToStep(2, SELECT_DELAY_MS);
           }}
         />
       )}
-      {step === 2 && <SizeStep selected={size} onSelect={setSize} onBack={() => goToStep(1)} onNext={() => goToStep(3)} />}
+      {step === 2 && <SizeStep ring={ring} selected={size} onSelect={setSize} onBack={() => goToStep(1)} onNext={() => goToStep(3)} />}
       {step === 3 && ring && size && (
         <StoneStep
           ring={ring}

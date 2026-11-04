@@ -1,176 +1,82 @@
-// Brand, navigation, footer and store-policy content.
+// Brand, navigation, footer, contact and store settings.
+// Live store: filled from GET /bootstrap and GET /home at start-up (see src/api/hydrate.js).
+// Export names are unchanged so components keep importing them as before.
 
-export const BRAND = {
-  name: 'AANI GEMAS',
-  logo: '/images/logo_aani.png',
-  tagline: ['Crafted with passion.', 'Worn with pride.'],
-  since: 1987,
-};
+import { major, mapShippingMethod } from '../api/mappers';
 
-// Static display rate — the frontend does not fetch live prices.
-export const GOLD_RATE = {
-  perOz: 2480,
-  get perGram() {
-    return this.perOz / 31.1035;
-  },
-  purity18k: 18 / 24,
-};
+const fill = (target, items) => target.splice(0, target.length, ...(items ?? []));
 
-export const USP_ITEMS = [
-  { icon: '🚚', label: 'Free Shipping over $500' },
-  { icon: '✦', label: 'GIA Certified Gemstones' },
-  { icon: '↩', label: '30-Day Free Returns' },
-  { icon: '🔒', label: 'Secure & Insured Delivery' },
-  { icon: '♦', label: 'Lifetime Craftsmanship Warranty' },
-];
+export const BRAND = { name: 'AANI GEMAS', logo: '', tagline: ['', ''], since: '' };
 
-export const MEGA_MENU = {
-  columns: [
-    {
-      heading: 'Categories',
-      links: [
-        { label: 'Rings', to: '/shop?cat=rings' },
-        { label: 'Necklaces', to: '/shop?cat=necklaces' },
-        { label: 'Earrings', to: '/shop?cat=earrings' },
-        { label: 'Bracelets', to: '/shop?cat=bracelets' },
-      ],
-    },
-    {
-      heading: 'Shop By',
-      links: [
-        { label: 'New Arrivals', to: '/shop?sort=newest' },
-        { label: 'Bestsellers', to: '/shop?sort=rating' },
-        { label: 'On Sale', to: '/shop' },
-        { label: 'Under $1000', to: '/shop?max=1000' },
-      ],
-    },
-    {
-      heading: 'Collections',
-      links: [
-        { label: 'Engagement Rings', to: '/shop?cat=rings' },
-        { label: 'Anniversary Gifts', to: '/shop' },
-        { label: 'Bridal Sets', to: '/shop' },
-        { label: 'Gift Guide', to: '/shop' },
-      ],
-    },
-  ],
-  featured: {
-    tag: 'New Arrival',
-    name: 'Seren Sapphire Halo',
-    image: '/images/ring2_sapphire.jpg',
-    to: '/product/r4',
-  },
-};
+// Live gold rate (EUR per troy oz, converted to the display currency by the API).
+export const GOLD_RATE = { perOz: 0, source: 'manual', updatedAt: null };
 
-export const MOBILE_NAV = [
-  { label: 'Home', to: '/' },
-  { label: 'Shop All', to: '/shop' },
-  { label: 'Rings', to: '/shop?cat=rings' },
-  { label: 'Necklaces', to: '/shop?cat=necklaces' },
-  { label: 'Earrings', to: '/shop?cat=earrings' },
-  { label: 'Bracelets', to: '/shop?cat=bracelets' },
-  { label: '✦ Design Your Ring', to: '/design-your-ring', highlight: true },
-  { label: 'Wishlist', to: '/wishlist' },
-  { label: 'Our Story', to: '/about' },
-  { label: 'Services', to: '/services' },
-  { label: 'Wholesale / B2B', to: '/wholesale' },
-  { label: 'Contact', to: '/contact' },
-  { label: 'Track Order', to: '/track-order' },
-];
+export const USP_ITEMS = [];
+export const MEGA_MENU = { columns: [], featured: null };
+export const MOBILE_NAV = [];
+export const FOOTER_COLUMNS = [];
+export const FOOTER_LEGAL_LINKS = [];
+export const CONTACT = { address: '', phone: '', email: '', hours: '', whatsapp: '', mapSrc: '' };
+export const CONTACT_TOPICS = [];
+export const PAYMENT_BADGES = [];
+export const SHIPPING_POLICY = [];
+export const CARE_INSTRUCTIONS = [];
+export const TRUST_POINTS = [];
+export const SHIPPING_METHODS = [];
 
-export const FOOTER_COLUMNS = [
-  {
-    heading: 'Collections',
-    links: [
-      { label: 'Rings', to: '/shop?cat=rings' },
-      { label: 'Necklaces', to: '/shop?cat=necklaces' },
-      { label: 'Earrings', to: '/shop?cat=earrings' },
-      { label: 'Bracelets', to: '/shop?cat=bracelets' },
-    ],
-  },
-  {
-    heading: 'Services',
-    links: [
-      { label: 'Design Your Ring', to: '/design-your-ring' },
-      { label: 'Ring Resizing', to: '/services' },
-      { label: 'Engraving', to: '/services' },
-      { label: 'Jewelry Repairs', to: '/services' },
-    ],
-  },
-  {
-    heading: 'Help',
-    links: [
-      { label: 'Shipping Info', to: '/shipping-policy' },
-      { label: 'Returns & Exchange', to: '/returns' },
-      { label: 'Track Order', to: '/track-order' },
-      { label: 'Warranty & Care', to: '/warranty' },
-      { label: 'FAQ', to: '/faq' },
-      { label: 'Contact Us', to: '/contact' },
-    ],
-  },
-  {
-    heading: 'Company',
-    links: [
-      { label: 'Our Story', to: '/about' },
-      { label: 'My Account', to: '/account' },
-      { label: 'My Orders', to: '/account/orders' },
-      { label: 'Wishlist', to: '/wishlist' },
-      { label: 'Wholesale / B2B', to: '/wholesale' },
-      { label: 'Business Login', to: '/b2b/login' },
-    ],
-  },
-];
+// Country names for the selects; COUNTRY_LIST keeps the ISO codes the API expects.
+export const COUNTRIES = [];
+export const COUNTRY_LIST = [];
+export const countryCode = (name) => COUNTRY_LIST.find((c) => c.name === name || c.code === name)?.code ?? name;
 
-export const FOOTER_LEGAL_LINKS = [
-  { label: 'Privacy Policy', to: '/privacy-policy' },
-  { label: 'Terms of Service', to: '/terms' },
-  { label: 'Shipping', to: '/shipping-policy' },
-];
+export let FREE_SHIPPING_THRESHOLD = 0;
+export let TAX_RATE = 0;
+export let CURRENCY = 'EUR';
+export let STRIPE_KEY = null;
+export let GOOGLE_CLIENT_ID = null;
 
-export const CONTACT = {
-  address: '21 Linking Road, Bandra West, Mumbai 400050, India',
-  phone: '+91 98765 43210',
-  email: 'care@aanigems.com',
-  hours: 'Mon–Sat, 10:00 – 19:00 IST',
-  whatsapp: '919876543210',
-  mapSrc: 'https://www.google.com/maps?q=Linking+Road+Bandra+West+Mumbai&output=embed',
-};
-export const PAYMENT_BADGES = ['VISA', 'MC', 'AMEX', 'PayPal', 'UPI'];
+// Card payments only (Stripe). UPI / net banking are not offered by the payment provider.
+export const PAYMENT_TABS = [{ id: 'card', label: '💳 Credit Card' }];
 
-export const SHIPPING_POLICY = [
-  'Free shipping on all orders over $500',
-  'Insured and tracked worldwide delivery',
-  '30-day hassle-free returns',
-];
+// Home page copy blocks
+export const HOME = { hero: {}, categorySection: {}, designRingBanner: {}, testimonialsSection: {} };
+export const SERVICES = [];
 
-export const CARE_INSTRUCTIONS = [
-  'Store in the provided jewelry pouch',
-  'Avoid exposure to harsh chemicals',
-  'Clean gently with a soft cloth',
-];
+export function hydrateSite(b) {
+  Object.assign(BRAND, b.brand ?? {});
+  GOLD_RATE.perOz = major(b.gold_rate?.per_oz);
+  GOLD_RATE.source = b.gold_rate?.source;
+  GOLD_RATE.updatedAt = b.gold_rate?.updated_at;
+  Object.assign(MEGA_MENU, b.navigation?.mega_menu ?? {});
+  fill(MOBILE_NAV, b.navigation?.mobile);
+  fill(FOOTER_COLUMNS, b.footer?.columns);
+  fill(FOOTER_LEGAL_LINKS, b.footer?.legal_links);
+  const c = b.contact ?? {};
+  Object.assign(CONTACT, { address: c.address, phone: c.phone, email: c.email, hours: c.hours, whatsapp: c.whatsapp, mapSrc: c.map_embed_url });
+  fill(CONTACT_TOPICS, b.contact_topics);
+  fill(PAYMENT_BADGES, b.payment_badges);
+  fill(TRUST_POINTS, b.trust_points);
+  fill(SHIPPING_METHODS, (b.shipping_methods ?? []).map(mapShippingMethod));
+  fill(COUNTRY_LIST, b.countries);
+  fill(COUNTRIES, (b.countries ?? []).map((x) => x.name));
+  FREE_SHIPPING_THRESHOLD = major(b.free_shipping_threshold);
+  TAX_RATE = Number(b.tax_rate) || 0;
+  CURRENCY = b.free_shipping_threshold?.currency || 'EUR';
+  STRIPE_KEY = b.stripe_publishable_key || null;
+  GOOGLE_CLIENT_ID = typeof b.google_client_id === 'string' ? b.google_client_id : b.google_client_id?.web ?? null;
+}
 
-export const FREE_SHIPPING_THRESHOLD = 500;
-export const TAX_RATE = 0.08;
+export function hydrateHome(h) {
+  fill(USP_ITEMS, h.usp_items);
+  HOME.hero = h.hero ?? {};
+  HOME.categorySection = h.category_section ?? {};
+  HOME.designRingBanner = h.design_ring_banner ?? {};
+  HOME.testimonialsSection = h.testimonials_section ?? {};
+}
 
-export const SHIPPING_METHODS = [
-  { id: 'standard', name: 'Standard Delivery', time: '5-7 business days', price: 25, freeOverThreshold: true },
-  { id: 'express', name: 'Express Delivery', time: '2-3 business days', price: 45 },
-  { id: 'overnight', name: 'Overnight Delivery', time: 'Next business day', price: 95 },
-];
+export function hydrateProductPagePoints({ shipping_points: shipping, care_instructions: care }) {
+  if (shipping) fill(SHIPPING_POLICY, shipping);
+  if (care) fill(CARE_INSTRUCTIONS, care);
+}
 
-export const COUNTRIES = ['India', 'United States', 'United Kingdom', 'UAE', 'Other'];
-export const BANKS = ['HDFC Bank', 'ICICI Bank', 'SBI', 'Axis Bank', 'Kotak Bank'];
-
-export const PAYMENT_TABS = [
-  { id: 'card', label: '💳 Credit Card' },
-  { id: 'upi', label: '📱 UPI' },
-  { id: 'bank', label: '🏦 Net Banking' },
-];
-
-export const TRUST_POINTS = ['🔒 Secure Checkout', '✦ GIA Certified Jewelry', '↩ 30-Day Returns'];
-
-// Demo coupon codes (percent off the subtotal).
-export const COUPONS = {
-  AANI10: { percent: 10, label: '10% off your order' },
-  WELCOME15: { percent: 15, label: '15% welcome offer' },
-};
+export const hydrateServices = (list) => fill(SERVICES, list);

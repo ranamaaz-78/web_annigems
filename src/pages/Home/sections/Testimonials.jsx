@@ -1,11 +1,12 @@
 import SectionHeader from '../../../components/common/SectionHeader';
+import { HOME } from '../../../data/site';
 import { TESTIMONIALS } from '../../../data/testimonials';
 
 export default function Testimonials() {
   return (
     <section className="test-section">
       <div className="test-inner">
-        <SectionHeader eyebrow="Client Stories" title="What Our Clients Say" />
+        <SectionHeader eyebrow={HOME.testimonialsSection?.eyebrow || 'Client Stories'} title={HOME.testimonialsSection?.title || 'What Our Clients Say'} />
         <div className="test-grid" data-stagger=".t-card">
           {TESTIMONIALS.map((t) => (
             <div className="t-card" key={t.name}>

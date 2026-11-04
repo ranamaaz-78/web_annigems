@@ -1,17 +1,37 @@
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { gsap, prefersReducedMotion, useGSAP } from '../../lib/gsap';
 import { useAuth } from '../../hooks/useAuth';
 import { formatPrice } from '../../utils/format';
 
 const SPARKS = 28;
+const POLL_MS = 2500;
+const POLL_LIMIT = 24;
 
 export default function OrderSuccessPage() {
   const { id } = useParams();
-  const { getOrder } = useAuth();
+  const { getOrder, fetchOrder, isB2B: b2bSession } = useAuth();
   const order = getOrder(id);
   const root = useRef(null);
   const isB2B = order?.type === 'b2b';
+  const [checks, setChecks] = useState(0);
+
+  // Retail orders: follow the order until the Stripe webhook has confirmed (or failed) the payment.
+  const status = order?.status;
+  useEffect(() => {
+    if (b2bSession || isB2B) return undefined;
+    if (order && status !== 'pending_payment') return undefined;
+    if (checks >= POLL_LIMIT) return undefined;
+    const t = setTimeout(() => {
+      fetchOrder(id)
+        .catch(() => {})
+        .finally(() => setChecks((n) => n + 1));
+    }, checks === 0 && !order ? 0 : POLL_MS);
+    return () => clearTimeout(t);
+  }, [id, order, status, checks, isB2B, b2bSession, fetchOrder]);
+
+  const failed = status === 'payment_failed';
+  const pending = status === 'pending_payment';
 
   useGSAP(
     () => {
@@ -46,7 +66,7 @@ export default function OrderSuccessPage() {
         ))}
       </div>
       <span className="os-icon">✦</span>
-      <h1 className="os-title">{isB2B ? 'Order Submitted!' : 'Order Placed!'}</h1>
+      <h1 className="os-title">{isB2B ? 'Order Submitted!' : failed ? 'Payment Failed' : 'Order Placed!'}</h1>
       <p className="os-sub">
         {isB2B ? (
           <>
@@ -54,9 +74,15 @@ export default function OrderSuccessPage() {
             <br />
             from your business dashboard. Crafting starts after payment is confirmed.
           </>
+        ) : failed ? (
+          <>
+            Your order was created but the payment did not go through, so you have not been charged.
+            <br />
+            You can reorder it from your order history or contact us for help.
+          </>
         ) : (
           <>
-            Thank you for your purchase. A confirmation has been sent to your email.
+            {pending ? 'We are confirming your payment. ' : ''}Thank you for your purchase. A confirmation has been sent to your email.
             <br />
             Your order will be crafted and shipped within 4-6 weeks.
           </>
@@ -76,7 +102,7 @@ export default function OrderSuccessPage() {
             </div>
           ))}
           <div className="os-line os-total">
-            <span>{isB2B ? 'Order total' : 'Total paid'}</span>
+            <span>{isB2B || failed || pending ? 'Order total' : 'Total paid'}</span>
             <b>{formatPrice(order.totals.total)}</b>
           </div>
         </div>
@@ -88,8 +114,8 @@ export default function OrderSuccessPage() {
             View Order
           </Link>
         ) : (
-          <Link className="btn-gold" to={`/track-order?id=${id}&email=${encodeURIComponent(order?.email ?? '')}`}>
-            Track Order
+          <Link className="btn-gold" to={failed ? `/account/orders/${id}` : `/track-order?id=${id}&email=${encodeURIComponent(order?.email ?? '')}`}>
+            {failed ? 'View Order' : 'Track Order'}
           </Link>
         )}
         <Link className="btn-outline" to="/shop">

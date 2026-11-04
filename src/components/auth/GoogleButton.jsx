@@ -1,7 +1,6 @@
-import { useState } from 'react';
-import { GOOGLE_ACCOUNTS } from '../../data/orders';
+import { useEffect, useRef, useState } from 'react';
+import { GOOGLE_CLIENT_ID } from '../../data/site';
 import { useAuth } from '../../hooks/useAuth';
-import { isEmail } from '../../utils/validate';
 
 const GoogleLogo = () => (
   <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
@@ -12,27 +11,66 @@ const GoogleLogo = () => (
   </svg>
 );
 
-// "Continue with Google" button that opens a simulated account chooser (mock auth, no real Google).
+const GIS_SRC = 'https://accounts.google.com/gsi/client';
+let gisPromise = null;
+
+// Loads Google Identity Services once.
+function loadGis() {
+  if (window.google?.accounts?.id) return Promise.resolve(window.google);
+  if (!gisPromise) {
+    gisPromise = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = GIS_SRC;
+      script.async = true;
+      script.onload = () => resolve(window.google);
+      script.onerror = () => {
+        gisPromise = null;
+        reject(new Error('Google sign-in could not be loaded. Please try again.'));
+      };
+      document.head.appendChild(script);
+    });
+  }
+  return gisPromise;
+}
+
+// "Continue with Google": opens the account dialog, which hosts Google's own sign-in button.
+// The Google ID token is verified by the API (POST /auth/google).
 export default function GoogleButton({ label = 'Continue with Google', onSuccess }) {
   const { loginWithGoogle } = useAuth();
   const [open, setOpen] = useState(false);
-  const [other, setOther] = useState(false);
-  const [email, setEmail] = useState('');
   const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const slot = useRef(null);
 
-  const choose = (account) => {
-    loginWithGoogle(account);
-    setOpen(false);
-    setOther(false);
-    onSuccess?.(account);
-  };
-
-  const submitOther = (e) => {
-    e.preventDefault();
-    if (!isEmail(email)) return setError('Enter a valid Google email.');
-    const [local] = email.split('@');
-    return choose({ firstName: local.charAt(0).toUpperCase() + local.slice(1), lastName: '', email });
-  };
+  useEffect(() => {
+    if (!open) return undefined;
+    if (!GOOGLE_CLIENT_ID) {
+      setError('Google sign-in is not available right now. Please use your email instead.');
+      return undefined;
+    }
+    let cancelled = false;
+    setError('');
+    loadGis()
+      .then((google) => {
+        if (cancelled || !slot.current) return;
+        google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: async ({ credential }) => {
+            setBusy(true);
+            const res = await loginWithGoogle(credential);
+            setBusy(false);
+            if (!res.ok) return setError(res.error);
+            setOpen(false);
+            return onSuccess?.();
+          },
+        });
+        google.accounts.id.renderButton(slot.current, { theme: 'outline', size: 'large', shape: 'pill', text: 'continue_with', width: 300 });
+      })
+      .catch((err) => !cancelled && setError(err.message));
+    return () => {
+      cancelled = true;
+    };
+  }, [open, loginWithGoogle, onSuccess]);
 
   return (
     <>
@@ -42,40 +80,16 @@ export default function GoogleButton({ label = 'Continue with Google', onSuccess
       </button>
       {open && (
         <div className="g-bg" onClick={(e) => e.target === e.currentTarget && setOpen(false)}>
-          <div className="g-box" role="dialog" aria-modal="true" aria-label="Choose a Google account" data-lenis-prevent>
+          <div className="g-box" role="dialog" aria-modal="true" aria-label="Sign in with Google" data-lenis-prevent>
             <GoogleLogo />
             <h3>Choose an account</h3>
             <p>to continue to AANI GEMAS</p>
-            {!other ? (
-              <>
-                {GOOGLE_ACCOUNTS.map((a) => (
-                  <button key={a.email} type="button" className="g-acc" onClick={() => choose(a)}>
-                    <span className="g-av">{a.firstName[0]}</span>
-                    <span>
-                      <strong>
-                        {a.firstName} {a.lastName}
-                      </strong>
-                      <small>{a.email}</small>
-                    </span>
-                  </button>
-                ))}
-                <button type="button" className="g-acc" onClick={() => setOther(true)}>
-                  <span className="g-av g-av-plus">+</span>
-                  <span>
-                    <strong>Use another account</strong>
-                  </span>
-                </button>
-              </>
-            ) : (
-              <form onSubmit={submitOther} className="g-other">
-                <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} autoFocus />
-                {error && <span className="field-error">{error}</span>}
-                <button type="submit" className="btn-gold btn-full">
-                  Next
-                </button>
-              </form>
-            )}
-            <p className="g-note">Demo only — no real Google account is used.</p>
+            <div className="g-other" style={{ alignItems: 'center', minHeight: 48 }}>
+              <div ref={slot} />
+              {busy && <span className="g-note">Signing you in…</span>}
+            </div>
+            {error && <span className="field-error">{error}</span>}
+            <p className="g-note">Google shares your name, email address and profile picture with AANI GEMAS.</p>
             <button type="button" className="g-cancel" onClick={() => setOpen(false)}>
               Cancel
             </button>

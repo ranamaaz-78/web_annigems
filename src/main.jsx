@@ -1,28 +1,61 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-import App from './App';
-import { AuthProvider } from './context/AuthContext';
-import { B2BProvider } from './context/B2BContext';
-import { ShopProvider } from './context/ShopContext';
-import { ThemeProvider } from './context/ThemeContext';
-import { UIProvider } from './context/UIContext';
+import { hydrateStore } from './api/hydrate';
+import { errorText } from './api/client';
 import './styles/index.css';
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <BrowserRouter>
-      <ThemeProvider>
-        <AuthProvider>
-          <B2BProvider>
-            <ShopProvider>
-              <UIProvider>
-                <App />
-              </UIProvider>
-            </ShopProvider>
-          </B2BProvider>
-        </AuthProvider>
-      </ThemeProvider>
-    </BrowserRouter>
-  </StrictMode>,
+const root = createRoot(document.getElementById('root'));
+
+// Store content comes from the Web Portal API: load it first, then render the app.
+async function start() {
+  try {
+    await hydrateStore();
+  } catch (err) {
+    root.render(
+      <div className="boot-state">
+        <p className="boot-title">The store is temporarily unavailable</p>
+        <p className="boot-text">{errorText(err)}</p>
+        <button type="button" className="btn-gold" onClick={() => window.location.reload()}>
+          Try again
+        </button>
+      </div>,
+    );
+    return;
+  }
+
+  // Providers and pages are imported after hydration so module-level reads see live data.
+  const [{ default: App }, { AuthProvider }, { B2BProvider }, { ShopProvider }, { ThemeProvider }, { UIProvider }] = await Promise.all([
+    import('./App'),
+    import('./context/AuthContext'),
+    import('./context/B2BContext'),
+    import('./context/ShopContext'),
+    import('./context/ThemeContext'),
+    import('./context/UIContext'),
+  ]);
+
+  root.render(
+    <StrictMode>
+      <BrowserRouter>
+        <ThemeProvider>
+          <AuthProvider>
+            <B2BProvider>
+              <ShopProvider>
+                <UIProvider>
+                  <App />
+                </UIProvider>
+              </ShopProvider>
+            </B2BProvider>
+          </AuthProvider>
+        </ThemeProvider>
+      </BrowserRouter>
+    </StrictMode>,
+  );
+}
+
+root.render(
+  <div className="boot-state">
+    <span className="boot-mark">✦</span>
+  </div>,
 );
+start();

@@ -1,9 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { api } from '../../api/client';
 import { useSearchParams } from 'react-router-dom';
 import Breadcrumb from '../../components/common/Breadcrumb';
 import ProductGrid from '../../components/product/ProductGrid';
 import { CATEGORIES, MAX_PRICE, SORT_OPTIONS } from '../../data/catalog';
-import { PRODUCTS } from '../../data/products';
+import { PRODUCTS, mergeProducts } from '../../data/products';
 import { capitalize } from '../../utils/format';
 import { filterProducts } from './filterProducts';
 import ShopSidebar from './ShopSidebar';
@@ -41,10 +42,35 @@ export default function ShopPage() {
     setParams({});
   };
 
-  const products = useMemo(
+  // Filtered on the server (GET /products). The catalogue loaded at start-up is filtered locally
+  // until the response arrives, so the grid never flashes empty.
+  const localProducts = useMemo(
     () => filterProducts(PRODUCTS, { category, maxPrice, stones, sort }),
     [category, maxPrice, stones, sort],
   );
+  const filterKey = JSON.stringify({ category, maxPrice, stones, sort });
+  const [remote, setRemote] = useState(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const q = new URLSearchParams({ sort, per_page: '50' });
+    if (category !== 'all') q.set('category', category);
+    if (maxPrice < MAX_PRICE) q.set('max_price', String(Math.round(maxPrice * 100)));
+    stones.forEach((s) => q.append('stone[]', s));
+    const t = setTimeout(() => {
+      api(`products?${q}`, { signal: controller.signal })
+        .then((res) => setRemote({ key: filterKey, products: mergeProducts(res.data), total: res.meta?.total ?? res.data.length }))
+        .catch(() => {});
+    }, 150);
+    return () => {
+      clearTimeout(t);
+      controller.abort();
+    };
+  }, [filterKey, category, maxPrice, stones, sort]);
+
+  const fresh = remote?.key === filterKey ? remote : null;
+  const products = fresh ? fresh.products : localProducts;
+  const count = fresh ? fresh.total : localProducts.length;
 
   const crumbs = [{ label: 'Home', to: '/' }, category === 'all' ? { label: 'Shop' } : { label: 'Shop', to: '/shop' }];
   if (category !== 'all') crumbs.push({ label: capitalize(category) });
@@ -64,7 +90,7 @@ export default function ShopPage() {
         />
         <div>
           <div className="shop-toolbar">
-            <p className="shop-count">{products.length} pieces</p>
+            <p className="shop-count">{count} pieces</p>
             <select
               className="sort-select"
               value={sort}
