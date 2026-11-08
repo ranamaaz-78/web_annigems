@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { gsap, prefersReducedMotion, useGSAP } from '../../lib/gsap';
+import { CARD_PAYMENTS_ENABLED } from '../../data/site';
 import { useAuth } from '../../hooks/useAuth';
 import { formatPrice } from '../../utils/format';
 
@@ -102,7 +103,7 @@ export default function OrderSuccessPage() {
             </div>
           ))}
           <div className="os-line os-total">
-            <span>{isB2B || failed || pending ? 'Order total' : 'Total paid'}</span>
+            <span>{isB2B || failed || pending ? 'Order total' : CARD_PAYMENTS_ENABLED ? 'Total paid' : 'Pay on delivery'}</span>
             <b>{formatPrice(order.totals.total)}</b>
           </div>
         </div>

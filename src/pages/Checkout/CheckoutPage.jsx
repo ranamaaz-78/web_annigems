@@ -3,6 +3,7 @@ import { useRef, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { api, errorText } from '../../api/client';
 import { getStripe } from '../../api/stripe';
+import { CARD_PAYMENTS_ENABLED } from '../../data/site';
 import { useAuth } from '../../hooks/useAuth';
 import { useShop } from '../../hooks/useShop';
 import { toApiLine } from '../../utils/cart';
@@ -42,13 +43,15 @@ function Checkout() {
 
   const handlePlaceOrder = async () => {
     if (busy) return;
-    if (!stripe || !elements) return setError('Card payments are not available right now. Please try again later.');
+    if (CARD_PAYMENTS_ENABLED && (!stripe || !elements)) return setError('Card payments are not available right now. Please try again later.');
     if (!cartValid) return setError(quoting ? 'Updating your order total… please try again in a moment.' : 'Some items in your bag are unavailable. Please review your cart.');
 
     const body = {
       items: cart.map(toApiLine),
       shipping_method: shippingMethod,
       coupon_code: couponCode || null,
+      // TEMPORARY: cash on delivery while Stripe is not set up (see CARD_PAYMENTS_ENABLED).
+      payment_method: CARD_PAYMENTS_ENABLED ? 'card' : 'cod',
       address: {
         name: address.name,
         phone: address.phone || null,
@@ -68,7 +71,7 @@ function Checkout() {
       const res = await api('checkout', { method: 'POST', body, headers: { 'Idempotency-Key': attempt.current.key } });
       const order = cacheOrder(res.data.order);
       const payment = res.data.payment;
-      if (payment?.client_secret) {
+      if (CARD_PAYMENTS_ENABLED && payment?.client_secret) {
         const result = await stripe.confirmCardPayment(payment.client_secret, {
           payment_method: { card: elements.getElement(CardNumberElement), billing_details: { name: cardName.trim(), email: user?.email } },
         });
@@ -141,7 +144,8 @@ function Checkout() {
 
 export default function CheckoutPage() {
   return (
-    <Elements stripe={getStripe()}>
+    // With cash on delivery only, Stripe.js is not loaded at all.
+    <Elements stripe={CARD_PAYMENTS_ENABLED ? getStripe() : null}>
       <Checkout />
     </Elements>
   );

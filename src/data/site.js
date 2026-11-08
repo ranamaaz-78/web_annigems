@@ -35,8 +35,14 @@ export let CURRENCY = 'EUR';
 export let STRIPE_KEY = null;
 export let GOOGLE_CLIENT_ID = null;
 
-// Card payments only (Stripe). UPI / net banking are not offered by the payment provider.
-export const PAYMENT_TABS = [{ id: 'card', label: '💳 Credit Card' }];
+// TEMPORARY: cash on delivery only, while Stripe is not set up (the API needs COD_ENABLED=true).
+// To bring card payments (Stripe) back, set this to true; the card tab and Stripe code return as they were.
+export const CARD_PAYMENTS_ENABLED = false;
+
+// UPI / net banking are not offered by the payment provider.
+export const PAYMENT_TABS = CARD_PAYMENTS_ENABLED
+  ? [{ id: 'card', label: '💳 Credit Card' }]
+  : [{ id: 'cod', label: '💵 Cash on Delivery' }];
 
 // Home page copy blocks
 export const HOME = { hero: {}, categorySection: {}, designRingBanner: {}, testimonialsSection: {} };

@@ -1,6 +1,6 @@
 import { CardCvcElement, CardExpiryElement, CardNumberElement } from '@stripe/react-stripe-js';
 import { useState } from 'react';
-import { PAYMENT_TABS } from '../../data/site';
+import { CARD_PAYMENTS_ENABLED, PAYMENT_TABS } from '../../data/site';
 import { useTheme } from '../../hooks/useTheme';
 
 // Card fields are Stripe Elements (card data never touches our servers).
@@ -22,7 +22,7 @@ const elementOptions = (placeholder) => ({
 
 export default function PaymentStep({ onBack, onNext, active, cardName, onCardName, stripeReady = true }) {
   const { theme } = useTheme();
-  const [tab, setTab] = useState('card');
+  const [tab, setTab] = useState(PAYMENT_TABS[0].id);
   // Fields remount on a theme change (so their colours follow it); completeness is tracked per theme.
   const [complete, setComplete] = useState({});
   const [errors, setErrors] = useState({});
@@ -35,6 +35,8 @@ export default function PaymentStep({ onBack, onNext, active, cardName, onCardNa
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    // Cash on delivery: nothing to fill in here.
+    if (!CARD_PAYMENTS_ENABLED) return onNext();
     if (!stripeReady) return setFormError('Card payments are not available right now. Please try again later.');
     if (complete.theme !== theme || !complete.number || !complete.expiry || !complete.cvc) return setFormError('Please enter your complete card details.');
     if (!cardName.trim()) return setFormError('Please enter the name on the card.');
@@ -53,6 +55,12 @@ export default function PaymentStep({ onBack, onNext, active, cardName, onCardNa
         ))}
       </div>
       <form className="co-form" onSubmit={handleSubmit} noValidate>
+        {!CARD_PAYMENTS_ENABLED && (
+          <div className={`pay-form${tab === 'cod' ? ' active' : ''}`}>
+            <p className="secure-note">You pay in cash when your order is delivered. No card details are needed.</p>
+          </div>
+        )}
+        {CARD_PAYMENTS_ENABLED && (
         <div className={`pay-form${tab === 'card' ? ' active' : ''}`}>
           <div className={`form-field${errors.number ? ' has-error' : ''}`}>
             <label htmlFor="card-number">Card Number</label>
@@ -76,8 +84,9 @@ export default function PaymentStep({ onBack, onNext, active, cardName, onCardNa
             <input id="card-name" type="text" placeholder="PRIYA MEHTA" value={cardName} onChange={(e) => onCardName(e.target.value)} autoComplete="cc-name" />
           </div>
         </div>
+        )}
         {formError && <p className="field-error">{formError}</p>}
-        <p className="secure-note">🔒 Your payment is secured by 256-bit SSL encryption</p>
+        {CARD_PAYMENTS_ENABLED && <p className="secure-note">🔒 Your payment is secured by 256-bit SSL encryption</p>}
         <div className="co-btns">
           <button type="button" className="btn-ghost" onClick={onBack}>
             ← Back

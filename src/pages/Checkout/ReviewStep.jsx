@@ -1,3 +1,4 @@
+import { CARD_PAYMENTS_ENABLED } from '../../data/site';
 import { formatPrice } from '../../utils/format';
 
 export default function ReviewStep({ cart, onBack, onPlaceOrder, active, busy = false, error = '' }) {
@@ -30,7 +31,7 @@ export default function ReviewStep({ cart, onBack, onPlaceOrder, active, busy = 
           ← Back
         </button>
         <button className="btn-gold" onClick={onPlaceOrder} disabled={busy}>
-          {busy ? 'Processing payment…' : 'Place Order →'}
+          {busy ? (CARD_PAYMENTS_ENABLED ? 'Processing payment…' : 'Placing order…') : 'Place Order →'}
         </button>
       </div>
     </div>
