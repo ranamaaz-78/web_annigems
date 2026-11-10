@@ -4,14 +4,14 @@ import FormField from '../../components/common/FormField';
 import PageHero from '../../components/common/PageHero';
 import { BUSINESS_TYPES, WHOLESALE_PERKS } from '../../data/b2b';
 import { useAuth } from '../../hooks/useAuth';
-import { useB2B } from '../../hooks/useB2B';
+import { api, errorText } from '../../api/client';
 import { useUI } from '../../hooks/useUI';
 import { hasErrors, validateEmail, validatePhone, validateRequired } from '../../utils/validate';
 
 const HOW_IT_WORKS = [
   { title: 'Tell us about your business', text: 'Send the short form below.' },
-  { title: 'We verify and set you up', text: 'Our team creates your business account and sets your trade terms.' },
-  { title: 'Sign in and order', text: 'You receive login details, see trade prices and order with approval, payment link or credit.' },
+  { title: 'We verify and set you up', text: 'A sales person creates your business account and your membership tier (Platinum, Gold or Silver).' },
+  { title: 'Sign in and order', text: 'You receive login details, see your member prices and order. We approve each order and you pay cash on delivery.' },
 ];
 
 const EMPTY = { businessName: '', contactName: '', email: '', phone: '', type: BUSINESS_TYPES[0], gst: '', message: '' };
@@ -19,7 +19,8 @@ const EMPTY = { businessName: '', contactName: '', email: '', phone: '', type: B
 // Public page: business accounts cannot self-register, so this collects an access request for the admin.
 export default function WholesalePage() {
   const { isB2B } = useAuth();
-  const { addEnquiry } = useB2B();
+  const [busy, setBusy] = useState(false);
+  const [formError, setFormError] = useState('');
   const { showToast } = useUI();
   const [form, setForm] = useState(EMPTY);
   const [errors, setErrors] = useState({});
@@ -27,7 +28,8 @@ export default function WholesalePage() {
 
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
-  const handleSubmit = (e) => {
+  // The request reaches our team through the contact inbox (POST /contact).
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const errs = {
       businessName: validateRequired(form.businessName, 'Business name'),
@@ -36,10 +38,27 @@ export default function WholesalePage() {
       phone: validatePhone(form.phone),
     };
     setErrors(errs);
-    if (hasErrors(errs)) return;
-    addEnquiry(form);
-    setSent(true);
-    showToast('Request sent. We will be in touch soon.');
+    if (hasErrors(errs) || busy) return;
+    const message = [
+      'Business account request',
+      `Business: ${form.businessName}`,
+      `Type: ${form.type}`,
+      `Contact: ${form.contactName}`,
+      `Phone: ${form.phone || '-'}`,
+      `GST / Tax ID: ${form.gst || '-'}`,
+      form.message ? `\n${form.message}` : '',
+    ].join('\n');
+    setBusy(true);
+    setFormError('');
+    try {
+      await api('contact', { method: 'POST', body: { name: form.contactName, email: form.email, message } });
+      setSent(true);
+      showToast('Request sent. We will be in touch soon.');
+    } catch (err) {
+      setFormError(errorText(err));
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -48,7 +67,7 @@ export default function WholesalePage() {
         crumbs={[{ label: 'Home', to: '/' }, { label: 'Wholesale' }]}
         eyebrow="AANI GEMAS for Business"
         title="Wholesale & Trade"
-        subtitle="Trade pricing, credit terms and custom rings for jewellers, boutiques and designers."
+        subtitle="Member pricing, cash on delivery and custom rings for jewellers, boutiques and designers."
       />
 
       <div className="b2b-perks" data-stagger=".b2b-perk">
@@ -108,8 +127,13 @@ export default function WholesalePage() {
                   <FormField id="wh-gst" label="GST / Tax ID (optional)" value={form.gst} onChange={set('gst')} />
                 </div>
                 <FormField id="wh-msg" as="textarea" rows={3} label="Tell us about your needs (optional)" value={form.message} onChange={set('message')} />
-                <button type="submit" className="btn-gold">
-                  Send Request
+                {formError && (
+                  <p className="form-alert" role="alert">
+                    {formError}
+                  </p>
+                )}
+                <button type="submit" className="btn-gold" disabled={busy}>
+                  {busy ? 'Sending…' : 'Send Request'}
                 </button>
               </form>
             </>

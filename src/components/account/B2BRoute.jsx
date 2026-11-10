@@ -3,8 +3,10 @@ import { useAuth } from '../../hooks/useAuth';
 
 // Wraps business-only routes; everyone else is sent to the business login.
 export default function B2BRoute() {
-  const { isB2B } = useAuth();
+  const { isB2B, loading } = useAuth();
   const { pathname } = useLocation();
+  // Wait for the saved session (Bearer token) to load before deciding.
+  if (loading) return null;
   if (!isB2B) return <Navigate to={`/b2b/login?next=${encodeURIComponent(pathname)}`} replace />;
   return <Outlet />;
 }

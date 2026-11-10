@@ -119,7 +119,7 @@ export default function CartPage() {
             <h3 className="cs-title">Order Summary</h3>
 
             {isB2B ? (
-              <p className="b2b-note">✦ Business pricing applied. Your order is sent for approval before payment.</p>
+              <p className="b2b-note">✦ Member pricing applied. Our team approves your order, then you pay cash on delivery.</p>
             ) : (
               <>
             <form className="coupon-form" onSubmit={handleCoupon}>

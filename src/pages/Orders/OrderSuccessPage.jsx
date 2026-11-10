@@ -14,7 +14,7 @@ export default function OrderSuccessPage() {
   const { getOrder, fetchOrder, isB2B: b2bSession } = useAuth();
   const order = getOrder(id);
   const root = useRef(null);
-  const isB2B = order?.type === 'b2b';
+  const isB2B = b2bSession || order?.accountType === 'business';
   const [checks, setChecks] = useState(0);
 
   // Retail orders: follow the order until the Stripe webhook has confirmed (or failed) the payment.
@@ -71,9 +71,9 @@ export default function OrderSuccessPage() {
       <p className="os-sub">
         {isB2B ? (
           <>
-            Your order is waiting for admin approval. Once approved you can pay by payment link or on credit
+            Your order is waiting for approval by our team. We will email you as soon as it is approved
             <br />
-            from your business dashboard. Crafting starts after payment is confirmed.
+            and crafting starts. Payment is cash on delivery.
           </>
         ) : failed ? (
           <>
@@ -103,7 +103,7 @@ export default function OrderSuccessPage() {
             </div>
           ))}
           <div className="os-line os-total">
-            <span>{isB2B || failed || pending ? 'Order total' : CARD_PAYMENTS_ENABLED ? 'Total paid' : 'Pay on delivery'}</span>
+            <span>{isB2B ? 'Pay on delivery' : failed || pending ? 'Order total' : CARD_PAYMENTS_ENABLED ? 'Total paid' : 'Pay on delivery'}</span>
             <b>{formatPrice(order.totals.total)}</b>
           </div>
         </div>

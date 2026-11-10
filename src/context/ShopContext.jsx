@@ -4,19 +4,16 @@ import { major, mapProduct } from '../api/mappers';
 import { CONFIG_RINGS, CONFIG_STONES } from '../data/configurator';
 import { getProductById } from '../data/products';
 import { useAuth } from '../hooks/useAuth';
-import { useB2B } from '../hooks/useB2B';
 import { toApiLine } from '../utils/cart';
-import { SHIPPING_METHODS } from '../data/site';
-import { applyConfigRule, orderTotals, resolveProductPrice, shippingCost } from '../utils/pricing';
 import { readStorage, writeStorage } from '../utils/storage';
 import { ShopContext } from './contexts';
 
 // Cart, wishlist and coupon.
 // - The cart lives on the client (localStorage); every price and total comes from POST /cart/quote.
 // - Coupons are validated by the quote endpoint.
-// - Signed-in customers' wishlist is stored on their account (GET/POST/DELETE /wishlist, /wishlist/sync);
+// - Signed-in accounts' wishlist is stored on their account (GET/POST/DELETE /wishlist, /wishlist/sync);
 //   guests keep a local wishlist that is merged after sign-in.
-// - Business (B2B) demo accounts keep the local preview pricing; that module has no backend yet.
+// - Business (B2B) accounts: the quote returns their tier prices (+ retail_unit_price); no coupons.
 
 const QUOTE_DELAY_MS = 250;
 
@@ -40,8 +37,7 @@ const loadCart = () => readStorage('aani-cart', []).map(normalizeLine).filter(Bo
 
 export function ShopProvider({ children }) {
   const { isB2B, user } = useAuth();
-  const { pricing } = useB2B();
-  const isCustomer = Boolean(user) && !isB2B;
+  const isCustomer = Boolean(user);
 
   const [rawCart, setCart] = useState(loadCart);
   const [guestWishlist, setGuestWishlist] = useState(() => readStorage('aani-wishlist', []));
@@ -69,7 +65,7 @@ export function ShopProvider({ children }) {
   );
 
   useEffect(() => {
-    if (isB2B || !rawCart.length) {
+    if (!rawCart.length) {
       setQuote(null);
       setQuoteError('');
       return undefined;
@@ -89,7 +85,7 @@ export function ShopProvider({ children }) {
         .finally(() => seq === quoteSeq.current && setQuoting(false));
     }, QUOTE_DELAY_MS);
     return () => clearTimeout(t);
-  }, [rawCart, couponCode, shippingMethod, isB2B, isCustomer, requestQuote]);
+  }, [rawCart, couponCode, shippingMethod, isCustomer, requestQuote]);
 
   // ---- cart ---------------------------------------------------------------------
 
@@ -178,75 +174,58 @@ export function ShopProvider({ children }) {
   // ---- derived values -----------------------------------------------------------------
 
   const value = useMemo(() => {
-    let cart;
-    let totals;
     let coupon = null;
-    let shippingOptions = [];
-    let freeShippingRemaining = null;
-
-    if (isB2B) {
-      // Business preview pricing (local rules; no backend for B2B yet)
-      cart = rawCart.map((item) => {
-        const isConfig = item.kind === 'config';
-        const product = isConfig ? null : getProductById(item.id);
-        const price = isConfig ? applyConfigRule(item.price, pricing.config) : product ? resolveProductPrice(product, true, pricing) : item.price;
-        return { ...item, retailPrice: item.price, price };
-      });
-      totals = orderTotals(cart.reduce((s, i) => s + i.price * i.qty, 0), shippingMethod, 0);
-      shippingOptions = SHIPPING_METHODS.map((m) => {
-        const cost = shippingCost(m.id, totals.subtotal);
-        return { id: m.id, name: m.name, time: m.time, cost, isFree: cost === 0 };
-      });
-    } else {
-      const lines = quote && quote.lines.length === rawCart.length ? quote.lines : null;
-      cart = rawCart.map((item, i) => {
-        const line = lines?.[i];
-        if (!line) return { ...item, available: true, errors: [] };
-        return {
-          ...item,
-          name: line.name ?? item.name,
-          subtitle: line.subtitle ?? item.subtitle,
-          image: line.image ?? item.image,
-          price: major(line.unit_price),
-          available: line.available,
-          errors: line.errors ?? [],
-        };
-      });
-      const sumLocal = cart.reduce((s, i) => s + i.price * i.qty, 0);
-      totals = quote
-        ? {
-            subtotal: major(quote.totals.subtotal),
-            discount: major(quote.totals.discount),
-            shipping: major(quote.totals.shipping),
-            tax: major(quote.totals.tax),
-            total: major(quote.totals.total),
-            taxRate: quote.totals.tax_rate,
-          }
-        : { subtotal: sumLocal, discount: 0, shipping: 0, tax: 0, total: sumLocal };
-      if (quote?.coupon?.valid) coupon = { label: quote.coupon.message, percent: quote.coupon.percent };
-      shippingOptions = (quote?.shipping_options ?? []).map((o) => ({
-        id: o.code,
-        name: o.name,
-        time: o.delivery_time,
-        cost: major(o.price),
-        isFree: o.is_free,
-      }));
-      freeShippingRemaining = quote ? major(quote.amount_to_free_shipping) : null;
-    }
+    const lines = quote && quote.lines.length === rawCart.length ? quote.lines : null;
+    const cart = rawCart.map((item, i) => {
+      const line = lines?.[i];
+      if (!line) return { ...item, available: true, errors: [] };
+      return {
+        ...item,
+        name: line.name ?? item.name,
+        subtitle: line.subtitle ?? item.subtitle,
+        image: line.image ?? item.image,
+        price: major(line.unit_price),
+        // Business accounts: retail unit price and tier % (shown struck through in the cart)
+        retailPrice: line.retail_unit_price ? major(line.retail_unit_price) : null,
+        b2bPercent: line.b2b_percent ?? null,
+        available: line.available,
+        errors: line.errors ?? [],
+      };
+    });
+    const sumLocal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+    const totals = quote
+      ? {
+          subtotal: major(quote.totals.subtotal),
+          discount: major(quote.totals.discount),
+          shipping: major(quote.totals.shipping),
+          tax: major(quote.totals.tax),
+          total: major(quote.totals.total),
+          taxRate: quote.totals.tax_rate,
+        }
+      : { subtotal: sumLocal, discount: 0, shipping: 0, tax: 0, total: sumLocal };
+    if (quote?.coupon?.valid) coupon = { label: quote.coupon.message, percent: quote.coupon.percent };
+    const shippingOptions = (quote?.shipping_options ?? []).map((o) => ({
+      id: o.code,
+      name: o.name,
+      time: o.delivery_time,
+      cost: major(o.price),
+      isFree: o.is_free,
+    }));
+    const freeShippingRemaining = quote ? major(quote.amount_to_free_shipping) : null;
 
     const cartCount = cart.reduce((s, i) => s + i.qty, 0);
     return {
       cart,
       cartCount,
       cartSubtotal: totals.subtotal,
-      couponCode: coupon || isB2B ? couponCode : null,
+      couponCode: coupon ? couponCode : null,
       coupon,
       discount: totals.discount,
       totals,
       quote,
       quoting,
       quoteError,
-      cartValid: isB2B ? true : Boolean(quote?.valid),
+      cartValid: Boolean(quote?.valid),
       shippingMethod,
       setShippingMethod,
       shippingOptions,
@@ -261,7 +240,7 @@ export function ShopProvider({ children }) {
       isWishlisted,
       toggleWishlist,
     };
-  }, [rawCart, isB2B, pricing, quote, quoting, quoteError, couponCode, shippingMethod, wishlist, applyCoupon, removeCoupon, addToCart, changeQty, removeFromCart, clearCart, isWishlisted, toggleWishlist]);
+  }, [rawCart, quote, quoting, quoteError, couponCode, shippingMethod, wishlist, applyCoupon, removeCoupon, addToCart, changeQty, removeFromCart, clearCart, isWishlisted, toggleWishlist]);
 
   return <ShopContext.Provider value={value}>{children}</ShopContext.Provider>;
 }

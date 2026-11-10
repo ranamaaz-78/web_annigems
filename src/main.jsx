@@ -25,10 +25,9 @@ async function start() {
   }
 
   // Providers and pages are imported after hydration so module-level reads see live data.
-  const [{ default: App }, { AuthProvider }, { B2BProvider }, { ShopProvider }, { ThemeProvider }, { UIProvider }] = await Promise.all([
+  const [{ default: App }, { AuthProvider }, { ShopProvider }, { ThemeProvider }, { UIProvider }] = await Promise.all([
     import('./App'),
     import('./context/AuthContext'),
-    import('./context/B2BContext'),
     import('./context/ShopContext'),
     import('./context/ThemeContext'),
     import('./context/UIContext'),
@@ -39,13 +38,11 @@ async function start() {
       <BrowserRouter>
         <ThemeProvider>
           <AuthProvider>
-            <B2BProvider>
-              <ShopProvider>
-                <UIProvider>
-                  <App />
-                </UIProvider>
-              </ShopProvider>
-            </B2BProvider>
+            <ShopProvider>
+              <UIProvider>
+                <App />
+              </UIProvider>
+            </ShopProvider>
           </AuthProvider>
         </ThemeProvider>
       </BrowserRouter>

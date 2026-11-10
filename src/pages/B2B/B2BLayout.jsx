@@ -6,7 +6,6 @@ import { useUI } from '../../hooks/useUI';
 const LINKS = [
   { to: '/b2b', label: 'Dashboard', end: true },
   { to: '/b2b/orders', label: 'Orders' },
-  { to: '/b2b/credit', label: 'Credit' },
   { to: '/b2b/company', label: 'Company Profile' },
   { to: '/b2b/addresses', label: 'Addresses' },
   { to: '/b2b/password', label: 'Password' },

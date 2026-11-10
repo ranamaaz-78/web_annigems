@@ -38,9 +38,11 @@ function toCartLine(line, order) {
   };
 }
 
+// Order detail for customers (/account/orders/:id) and business accounts (/b2b/orders/:id).
 export default function OrderDetailPage() {
   const { id } = useParams();
   const { myOrders, isB2B, fetchOrder } = useAuth();
+  const backTo = isB2B ? '/b2b/orders' : '/account/orders';
   const { addToCart } = useShop();
   const { showToast } = useUI();
   const navigate = useNavigate();
@@ -50,20 +52,19 @@ export default function OrderDetailPage() {
 
   // Refresh the order from the API (status, tracking, timeline).
   useEffect(() => {
-    if (isB2B) return;
     fetchOrder(id)
       .catch(() => {})
       .finally(() => setLookedUp(true));
-  }, [id, isB2B, fetchOrder]);
+  }, [id, fetchOrder]);
 
-  if (!order && !isB2B && !lookedUp) return null;
+  if (!order && !lookedUp) return null;
 
   if (!order) {
     return (
       <div className="side-card">
         <h3 className="cs-title">Order not found</h3>
         <p className="muted">We could not find that order on your account.</p>
-        <Link to="/account/orders" className="btn-gold" style={{ marginTop: 16 }}>
+        <Link to={backTo} className="btn-gold" style={{ marginTop: 16 }}>
           Back to orders
         </Link>
       </div>
@@ -76,14 +77,8 @@ export default function OrderDetailPage() {
     for (let i = 0; i < line.qty; i += 1) addToCart({ ...line, qty: undefined });
   });
 
-  // Retail: POST /orders/{number}/reorder returns the still-available lines; B2B stays local.
+  // POST /orders/{number}/reorder returns the still-available lines (prices are quoted again in the cart).
   const reorder = async () => {
-    if (isB2B) {
-      addLines(order.items);
-      showToast('Items added to cart');
-      navigate('/cart');
-      return;
-    }
     if (busy) return;
     setBusy(true);
     try {
@@ -106,7 +101,7 @@ export default function OrderDetailPage() {
 
   return (
     <div className="order-detail">
-      <Link to="/account/orders" className="auth-link">
+      <Link to={backTo} className="auth-link">
         ← All orders
       </Link>
       <div className="side-card" data-reveal="up">
@@ -115,10 +110,15 @@ export default function OrderDetailPage() {
             <h3 className="cs-title" style={{ border: 0, margin: 0, padding: 0 }}>
               Order #{order.id}
             </h3>
-            <p className="muted">Placed {formatDate(order.createdAt)}</p>
+            <p className="muted">
+              Placed {formatDate(order.createdAt)}
+              {order.paymentMethod === 'cod' && ' · Cash on delivery'}
+            </p>
           </div>
           <OrderStatusBadge order={order} />
         </div>
+        {order.status === 'awaiting_approval' && <p className="muted">Our team is reviewing this order. We will email you once it is approved and crafting starts.</p>}
+        {order.status === 'cancelled' && order.cancelReason && <p className="muted">Reason: {order.cancelReason}</p>}
       </div>
 
       <div className="order-detail-grid">
@@ -133,6 +133,7 @@ export default function OrderDetailPage() {
                   <p className="ro-meta">
                     Qty {item.qty}
                     {item.meta?.size && ` · Size ${item.meta.size}`}
+                    {item.b2bPercent > 0 && ` · ${item.b2bPercent}% member discount`}
                   </p>
                 </div>
                 <span className="ro-price">{formatPrice(item.price * item.qty)}</span>

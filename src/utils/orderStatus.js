@@ -1,47 +1,24 @@
-import { B2B_STEPS } from '../data/b2b';
 import { ORDER_STAGES } from '../data/orders';
 
-export const isB2BOrder = (order) => order?.type === 'b2b';
+/** Business (B2B) order: cash on delivery, approved by our team before fulfilment. */
+export const isB2BOrder = (order) => order?.accountType === 'business';
 
-// B2B orders start fulfilment only once payment is confirmed or credit is approved.
-export const isFulfilling = (order) =>
-  isB2BOrder(order) && ['paid', 'credit_approved', 'credit_settled'].includes(order.payment?.status);
-
-const PAYMENT_LABELS = {
-  unpaid: 'Payment Pending',
-  link_requested: 'Payment Link Requested',
-  link_sent: 'Payment Link Ready',
-  credit_requested: 'Credit Under Review',
-};
-
-// Retail order payment states from the API; fulfilment stages apply once paid.
-const RETAIL_STATUS = {
+// Order states from the API that come before / instead of the fulfilment stages.
+const STATUS = {
   pending_payment: { label: 'Payment Pending', tone: 'warn' },
   payment_failed: { label: 'Payment Failed', tone: 'bad' },
+  awaiting_approval: { label: 'Awaiting Approval', tone: 'warn' },
   cancelled: { label: 'Cancelled', tone: 'bad' },
   refunded: { label: 'Refunded', tone: 'info' },
 };
 
 // { label, tone } shown in status badges. tone: '' | 'done' | 'warn' | 'bad' | 'info'
 export const orderStatus = (order) => {
-  if (!isB2BOrder(order)) {
-    if (RETAIL_STATUS[order.status]) return RETAIL_STATUS[order.status];
-    const last = ORDER_STAGES.length - 1;
-    return { label: ORDER_STAGES[order.stage]?.label ?? 'Processing', tone: order.stage >= last ? 'done' : '' };
+  if (STATUS[order.status]) {
+    return order.status === 'cancelled' && isB2BOrder(order) && order.cancelReason?.startsWith('Rejected')
+      ? { label: 'Rejected', tone: 'bad' }
+      : STATUS[order.status];
   }
-  if (order.approval === 'pending') return { label: 'Awaiting Approval', tone: 'warn' };
-  if (order.approval === 'rejected') return { label: 'Rejected', tone: 'bad' };
-  if (!isFulfilling(order)) {
-    return { label: PAYMENT_LABELS[order.payment?.status] ?? 'Payment Pending', tone: order.payment?.status === 'link_sent' ? 'info' : 'warn' };
-  }
-  const step = B2B_STEPS[Math.min(order.stage + 2, B2B_STEPS.length - 1)];
-  return { label: step.label, tone: order.stage >= 4 ? 'done' : '' };
-};
-
-// { steps, stage } for the Timeline component.
-export const orderTimeline = (order) => {
-  if (!isB2BOrder(order)) return { steps: ORDER_STAGES, stage: order.stage };
-  if (order.approval === 'pending') return { steps: B2B_STEPS, stage: 1 };
-  if (!isFulfilling(order)) return { steps: B2B_STEPS, stage: 2 };
-  return { steps: B2B_STEPS, stage: Math.min(order.stage + 2, B2B_STEPS.length - 1) };
+  const last = ORDER_STAGES.length - 1;
+  return { label: ORDER_STAGES[order.stage]?.label ?? 'Processing', tone: order.stage >= last ? 'done' : '' };
 };

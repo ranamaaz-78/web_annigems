@@ -17,6 +17,9 @@ export function mapProduct(p) {
     name: p.name,
     subtitle: p.subtitle ?? '',
     price: major(p.price),
+    // Business accounts: `price` is the tier price, `retailPrice` the normal one (null for retail customers).
+    retailPrice: majorOrNull(p.retail_price),
+    b2bPercent: p.b2b_percent ?? null,
     originalPrice: majorOrNull(p.compare_at_price),
     rating: Number(p.rating) || 0,
     reviews: p.reviews_count ?? 0,
@@ -127,6 +130,11 @@ export function mapOrder(o) {
     stage: o.stage ? ORDER_STAGE_CODES.indexOf(o.stage) : -1,
     canPay: Boolean(o.can_pay),
     canCancel: Boolean(o.can_cancel),
+    accountType: o.account_type ?? 'customer',
+    paymentMethod: o.payment_method ?? 'card',
+    companyName: o.company_name ?? '',
+    tier: o.tier ?? '',
+    cancelReason: o.cancel_reason ?? '',
     currency: o.currency,
     shippingMethod: o.shipping_method?.code ?? null,
     shippingMethodName: o.shipping_method?.name ?? '',
@@ -150,6 +158,7 @@ export function mapOrder(o) {
       name: i.name,
       subtitle: i.subtitle ?? '',
       price: major(i.unit_price),
+      b2bPercent: i.b2b_percent ?? null,
       qty: i.qty,
       image: i.image,
       meta: { ...(i.size ? { size: i.size } : {}), ...(i.custom_ring ? { stone: i.custom_ring.stone_name, ring: i.custom_ring.ring_name } : {}) },
@@ -170,7 +179,18 @@ export function mapOrder(o) {
 
 export const mapUser = (u, addresses = []) => ({
   id: u.id,
-  accountType: 'customer',
+  // 'customer' | 'business' (B2B account created by a sales person)
+  accountType: u.account_type === 'business' ? 'business' : 'customer',
+  company: u.business
+    ? {
+        name: u.business.company_name,
+        type: u.business.business_type ?? '',
+        taxId: u.business.tax_id ?? '',
+        tier: u.business.tier ?? '',
+        salesPerson: u.business.sales_person ?? null,
+      }
+    : null,
+  createdAt: u.created_at ? Date.parse(u.created_at) : null,
   firstName: u.first_name,
   lastName: u.last_name ?? '',
   email: u.email,

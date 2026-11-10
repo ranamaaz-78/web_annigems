@@ -4,14 +4,13 @@ import EmptyState from '../../components/common/EmptyState';
 import OrderStatusBadge from '../../components/common/OrderStatusBadge';
 import { useAuth } from '../../hooks/useAuth';
 import { formatDate, formatPrice } from '../../utils/format';
-import { isFulfilling } from '../../utils/orderStatus';
 
 const FILTERS = [
   { id: 'all', label: 'All', test: () => true },
-  { id: 'approval', label: 'Awaiting approval', test: (o) => o.approval === 'pending' },
-  { id: 'payment', label: 'Payment due', test: (o) => o.approval === 'approved' && !isFulfilling(o) },
-  { id: 'progress', label: 'In progress', test: (o) => isFulfilling(o) && o.stage < 4 },
-  { id: 'done', label: 'Delivered', test: (o) => isFulfilling(o) && o.stage >= 4 },
+  { id: 'approval', label: 'Awaiting approval', test: (o) => o.status === 'awaiting_approval' },
+  { id: 'progress', label: 'In progress', test: (o) => o.status === 'confirmed' && o.stage < 4 },
+  { id: 'done', label: 'Delivered', test: (o) => o.status === 'confirmed' && o.stage >= 4 },
+  { id: 'cancelled', label: 'Cancelled', test: (o) => o.status === 'cancelled' },
 ];
 
 export default function B2BOrdersPage() {
@@ -40,8 +39,7 @@ export default function B2BOrdersPage() {
                 <div>
                   <p className="order-id">#{o.id}</p>
                   <p className="muted">
-                    Placed {formatDate(o.createdAt)}
-                    {o.poNumber && ` · ${o.poNumber}`}
+                    Placed {formatDate(o.createdAt)} · Cash on delivery
                   </p>
                 </div>
                 <OrderStatusBadge order={o} />

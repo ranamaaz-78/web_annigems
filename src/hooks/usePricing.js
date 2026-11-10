@@ -1,22 +1,25 @@
 import { useCallback, useMemo } from 'react';
-import { applyConfigRule, resolveProductPrice } from '../utils/pricing';
+import { CONFIG_B2B } from '../data/configurator';
 import { useAuth } from './useAuth';
-import { useB2B } from './useB2B';
 
 // Price helpers that respect the signed-in account type (retail vs business).
+// For a business account the API already returns its tier prices: `price` is the business price
+// and `retailPrice` the normal one.
 export function usePricing() {
-  const { user } = useAuth();
-  const { pricing } = useB2B();
-  const isB2B = user?.accountType === 'b2b';
+  const { isB2B } = useAuth();
 
   // { price, retail, isB2B } for a catalogue product
   const productPrice = useCallback(
-    (product) => ({ price: resolveProductPrice(product, isB2B, pricing), retail: product.price, isB2B }),
-    [isB2B, pricing],
+    // isB2B here = "show the business price next to the struck retail price" (0% categories show one price)
+    (product) => ({ price: product.price, retail: product.retailPrice ?? product.price, isB2B: isB2B && product.retailPrice != null && product.retailPrice > product.price }),
+    [isB2B],
   );
 
-  // Price of a custom ring given its retail total
-  const configPrice = useCallback((total) => (isB2B ? applyConfigRule(total, pricing.config) : total), [isB2B, pricing]);
+  // Price of a custom ring given its retail total (tier % of the Design Your Ring row).
+  const configPrice = useCallback(
+    (total) => (isB2B && CONFIG_B2B.percent ? Math.round(total * (100 - CONFIG_B2B.percent)) / 100 : total),
+    [isB2B],
+  );
 
-  return useMemo(() => ({ isB2B, productPrice, configPrice }), [isB2B, productPrice, configPrice]);
+  return useMemo(() => ({ isB2B, productPrice, configPrice, ringPercent: isB2B ? CONFIG_B2B.percent : null }), [isB2B, productPrice, configPrice]);
 }

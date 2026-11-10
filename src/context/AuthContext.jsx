@@ -1,31 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api, errorText, getToken, setToken } from '../api/client';
 import { mapAddress, mapOrder, mapUser } from '../api/mappers';
-import { DEMO_B2B_USER, SEED_B2B_ORDERS } from '../data/b2b';
 import { COUNTRY_LIST, countryCode } from '../data/site';
-import { readStorage, removeStorage, writeStorage } from '../utils/storage';
 import { AuthContext } from './contexts';
 
-// Customer accounts run on the Web Portal API (Bearer token):
-//   auth/register, auth/login, auth/google, auth/forgot-password, auth/reset-password, auth/logout,
+// Customer and business (B2B) accounts both run on the Web Portal API (Bearer token):
+//   auth/login, auth/register, auth/google, auth/forgot-password, auth/reset-password, auth/logout,
 //   me, me/password, me/addresses, orders.
-// The B2B (business) module has no backend yet, so its demo session and orders stay in localStorage.
-
-const B2B_USERS_KEY = 'aani-users';
-const B2B_SESSION_KEY = 'aani-session';
-const B2B_ORDERS_KEY = 'aani-orders';
-
-const normalize = (email) => email.trim().toLowerCase();
-const publicUser = (u) => {
-  if (!u) return null;
-  const { password: _password, ...rest } = u;
-  return rest;
-};
-
-// Adds seed records that an older stored copy is missing.
-const withSeeds = (stored, seeds) => [...stored, ...seeds.filter((seed) => !stored.some((item) => item.id === seed.id))];
-const loadB2BUsers = () => withSeeds(readStorage(B2B_USERS_KEY, []).filter((u) => u.accountType === 'b2b'), [DEMO_B2B_USER]);
-const loadB2BOrders = () => withSeeds(readStorage(B2B_ORDERS_KEY, []).filter((o) => o.type === 'b2b'), SEED_B2B_ORDERS);
+// Business accounts are created by a sales person in the admin and sign in on /b2b/login.
+// The catalogue is loaded once at start-up with the token, so the API returns business prices;
+// signing a business in or out reloads the page to load the right prices everywhere.
 
 const ok = { ok: true };
 const fail = (err) => ({ ok: false, error: errorText(err) });
@@ -46,26 +30,11 @@ const addressBody = (a) => ({
 const deviceName = () => 'Web browser';
 
 export function AuthProvider({ children }) {
-  // Customer (API) session
   const [account, setAccount] = useState(null); // API user (mapped, without addresses)
   const [addresses, setAddresses] = useState([]);
   const [apiOrders, setApiOrders] = useState([]);
   const [loading, setLoading] = useState(() => Boolean(getToken()));
   const loadSeq = useRef(0);
-
-  // B2B demo session (local only)
-  const [b2bUsers, setB2BUsers] = useState(loadB2BUsers);
-  const [b2bEmail, setB2BEmail] = useState(() => readStorage(B2B_SESSION_KEY, null));
-  const [b2bOrders, setB2BOrders] = useState(loadB2BOrders);
-
-  useEffect(() => writeStorage(B2B_USERS_KEY, b2bUsers), [b2bUsers]);
-  useEffect(() => writeStorage(B2B_ORDERS_KEY, b2bOrders), [b2bOrders]);
-  useEffect(() => {
-    if (b2bEmail) writeStorage(B2B_SESSION_KEY, b2bEmail);
-    else removeStorage(B2B_SESSION_KEY);
-  }, [b2bEmail]);
-
-  const b2bAccount = useMemo(() => publicUser(b2bUsers.find((u) => u.email === b2bEmail)), [b2bUsers, b2bEmail]);
 
   const loadAddresses = useCallback(async () => {
     const res = await api('me/addresses');
@@ -83,7 +52,7 @@ export function AuthProvider({ children }) {
     return mapped;
   }, []);
 
-  /** Loads the signed-in customer (profile, addresses, orders). */
+  /** Loads the signed-in account (profile, addresses, orders). */
   const loadSession = useCallback(async () => {
     const seq = ++loadSeq.current;
     try {
@@ -112,7 +81,6 @@ export function AuthProvider({ children }) {
 
   const startSession = useCallback(
     async (data) => {
-      setB2BEmail(null);
       setToken(data.token);
       setAccount(mapUser(data.user));
       setLoading(false);
@@ -125,37 +93,49 @@ export function AuthProvider({ children }) {
     [loadAddresses, refreshOrders],
   );
 
-  const user = useMemo(() => (b2bAccount ? b2bAccount : account ? { ...account, addresses } : null), [b2bAccount, account, addresses]);
-  const isB2B = b2bAccount?.accountType === 'b2b';
+  const user = useMemo(() => (account ? { ...account, addresses } : null), [account, addresses]);
+  const isB2B = account?.accountType === 'business';
+
+  /** Signs in and returns the API payload; rejects (and signs out) when the account type does not match. */
+  const signIn = useCallback(async (email, password, wantBusiness) => {
+    const res = await api('auth/login', { method: 'POST', body: { email, password, device_name: deviceName() } });
+    const business = res.data.user?.account_type === 'business';
+    if (business !== wantBusiness) {
+      // Do not keep a session of the wrong kind.
+      api('auth/logout', { method: 'POST', headers: { Authorization: `Bearer ${res.data.token}` } }).catch(() => {});
+      throw new Error(business ? 'This is a business account. Please use the Business Login.' : 'This is not a business account. Please use the customer sign in.');
+    }
+    return res.data;
+  }, []);
 
   // All auth methods resolve to { ok: true } or { ok: false, error }.
   const login = useCallback(
     async (email, password) => {
-      if (b2bUsers.some((u) => u.email === normalize(email))) {
-        return { ok: false, error: 'This is a business account. Please use the Business Login.' };
-      }
       try {
-        const res = await api('auth/login', { method: 'POST', body: { email, password, device_name: deviceName() } });
-        await startSession(res.data);
+        await startSession(await signIn(email, password, false));
         return ok;
       } catch (err) {
         return fail(err);
       }
     },
-    [b2bUsers, startSession],
+    [signIn, startSession],
   );
 
-  // Business accounts are created by the admin; this is their separate sign-in (demo, no backend yet).
+  /**
+   * Business sign-in. On success the token is stored and the caller reloads the page
+   * (window.location) so the catalogue is fetched again with business prices.
+   */
   const loginB2B = useCallback(
-    (email, password) => {
-      const found = b2bUsers.find((u) => u.email === normalize(email));
-      if (!found) return { ok: false, error: 'No business account found with this email.' };
-      if (found.status === 'suspended') return { ok: false, error: 'This business account is suspended. Please contact us.' };
-      if (found.password !== password) return { ok: false, error: 'Incorrect password. Please try again.' };
-      setB2BEmail(found.email);
-      return ok;
+    async (email, password) => {
+      try {
+        const data = await signIn(email, password, true);
+        setToken(data.token);
+        return ok;
+      } catch (err) {
+        return fail(err);
+      }
     },
-    [b2bUsers],
+    [signIn],
   );
 
   const register = useCallback(
@@ -174,11 +154,16 @@ export function AuthProvider({ children }) {
     [startSession],
   );
 
-  // Google Identity Services ID token → POST auth/google.
+  // Google Identity Services ID token → POST auth/google (retail customers only).
   const loginWithGoogle = useCallback(
     async (idToken) => {
       try {
         const res = await api('auth/google', { method: 'POST', body: { id_token: idToken, device_name: deviceName() } });
+        if (res.data.user?.account_type === 'business') {
+          setToken(res.data.token);
+          window.location.assign('/b2b');
+          return ok;
+        }
         await startSession(res.data);
         return ok;
       } catch (err) {
@@ -189,16 +174,15 @@ export function AuthProvider({ children }) {
   );
 
   const logout = useCallback(() => {
-    if (b2bAccount) {
-      setB2BEmail(null);
-      return;
-    }
+    const wasBusiness = isB2B;
     if (getToken()) api('auth/logout', { method: 'POST' }).catch(() => {});
     setToken(null);
     setAccount(null);
     setAddresses([]);
     setApiOrders([]);
-  }, [b2bAccount]);
+    // Business prices are in the loaded catalogue: reload it with retail prices.
+    if (wasBusiness) window.location.assign('/b2b/login');
+  }, [isB2B]);
 
   // Forgot password: the API emails a 6-digit code (valid 15 minutes).
   const sendResetCode = useCallback(async (email) => {
@@ -222,13 +206,9 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  // Profile update (first name, last name, phone). Business demo accounts update locally.
+  // Profile update (first name, last name, phone).
   const updateUser = useCallback(
     async (patch) => {
-      if (b2bAccount) {
-        setB2BUsers((prev) => prev.map((u) => (u.email === b2bEmail ? { ...u, ...patch } : u)));
-        return ok;
-      }
       try {
         const res = await api('me', {
           method: 'PUT',
@@ -245,45 +225,24 @@ export function AuthProvider({ children }) {
         return fail(err);
       }
     },
-    [b2bAccount, b2bEmail, account],
+    [account],
   );
 
-  const changePassword = useCallback(
-    async (current, next) => {
-      if (b2bAccount) {
-        const found = b2bUsers.find((u) => u.email === b2bEmail);
-        if (found?.password && found.password !== current) return { ok: false, error: 'Current password is incorrect.' };
-        setB2BUsers((prev) => prev.map((u) => (u.email === b2bEmail ? { ...u, password: next } : u)));
-        return ok;
-      }
-      try {
-        await api('me/password', {
-          method: 'PUT',
-          body: { ...(current ? { current_password: current } : {}), password: next, password_confirmation: next },
-        });
-        setAccount((a) => (a ? { ...a, hasPassword: true, provider: 'password' } : a));
-        return ok;
-      } catch (err) {
-        return fail(err);
-      }
-    },
-    [b2bAccount, b2bUsers, b2bEmail],
-  );
+  const changePassword = useCallback(async (current, next) => {
+    try {
+      await api('me/password', {
+        method: 'PUT',
+        body: { ...(current ? { current_password: current } : {}), password: next, password_confirmation: next },
+      });
+      setAccount((a) => (a ? { ...a, hasPassword: true, provider: 'password' } : a));
+      return ok;
+    } catch (err) {
+      return fail(err);
+    }
+  }, []);
 
   const saveAddress = useCallback(
     async (address) => {
-      if (b2bAccount) {
-        const found = b2bUsers.find((u) => u.email === b2bEmail);
-        let list = found.addresses.some((a) => a.id === address.id)
-          ? found.addresses.map((a) => (a.id === address.id ? address : a))
-          : [...found.addresses, { ...address, id: `a-${Date.now()}` }];
-        if (address.isDefault || list.length === 1) {
-          const keepId = address.id ?? list[list.length - 1].id;
-          list = list.map((a) => ({ ...a, isDefault: a.id === keepId }));
-        }
-        setB2BUsers((prev) => prev.map((u) => (u.email === b2bEmail ? { ...u, addresses: list } : u)));
-        return ok;
-      }
       try {
         if (address.id) await api(`me/addresses/${address.id}`, { method: 'PUT', body: addressBody(address) });
         else await api('me/addresses', { method: 'POST', body: addressBody(address) });
@@ -293,15 +252,11 @@ export function AuthProvider({ children }) {
         return fail(err);
       }
     },
-    [b2bAccount, b2bUsers, b2bEmail, loadAddresses],
+    [loadAddresses],
   );
 
   const deleteAddress = useCallback(
     async (id) => {
-      if (b2bAccount) {
-        setB2BUsers((prev) => prev.map((u) => (u.email === b2bEmail ? { ...u, addresses: u.addresses.filter((a) => a.id !== id) } : u)));
-        return ok;
-      }
       try {
         await api(`me/addresses/${id}`, { method: 'DELETE' });
         await loadAddresses();
@@ -310,7 +265,7 @@ export function AuthProvider({ children }) {
         return fail(err);
       }
     },
-    [b2bAccount, b2bEmail, loadAddresses],
+    [loadAddresses],
   );
 
   /** Stores an API order (raw resource) in the session cache and returns it mapped. */
@@ -329,49 +284,14 @@ export function AuthProvider({ children }) {
     [cacheOrder],
   );
 
-  // Business orders wait for admin approval before any payment happens (demo, local only).
-  const placeB2BOrder = useCallback(
-    ({ items, totals, address, shippingMethod, poNumber, notes }) => {
-      const order = {
-        id: `BG-${Math.floor(Math.random() * 90000 + 10000)}`,
-        type: 'b2b',
-        email: b2bEmail,
-        company: b2bAccount?.company?.name ?? '',
-        createdAt: Date.now(),
-        stage: 0,
-        approval: 'pending',
-        payment: { method: null, status: 'unpaid' },
-        poNumber: poNumber?.trim() ?? '',
-        notes: notes?.trim() ?? '',
-        shippingMethod,
-        address,
-        items,
-        totals,
-      };
-      setB2BOrders((prev) => [order, ...prev]);
-      return order;
-    },
-    [b2bAccount, b2bEmail],
-  );
-
-  // patch can be an object or (order) => object. Used by the B2B payment requests.
-  const updateOrder = useCallback(
-    (id, patch) =>
-      setB2BOrders((prev) => prev.map((o) => (o.id === id ? { ...o, ...(typeof patch === 'function' ? patch(o) : patch) } : o))),
-    [],
-  );
-
-  const myOrders = useMemo(
-    () => (isB2B ? b2bOrders.filter((o) => o.email === b2bAccount.email) : account ? apiOrders : []),
-    [isB2B, b2bOrders, b2bAccount, account, apiOrders],
-  );
+  const myOrders = useMemo(() => (account ? apiOrders : []), [account, apiOrders]);
 
   const getOrder = useCallback(
     (id) => {
       const key = String(id).trim().toLowerCase();
-      return [...apiOrders, ...b2bOrders].find((o) => String(o.id).toLowerCase() === key);
+      return apiOrders.find((o) => String(o.id).toLowerCase() === key);
     },
-    [apiOrders, b2bOrders],
+    [apiOrders],
   );
 
   const value = useMemo(
@@ -391,16 +311,13 @@ export function AuthProvider({ children }) {
       changePassword,
       saveAddress,
       deleteAddress,
-      orders: b2bOrders,
       myOrders,
       refreshOrders,
       fetchOrder,
       cacheOrder,
-      placeB2BOrder,
-      updateOrder,
       getOrder,
     }),
-    [user, loading, login, loginB2B, isB2B, register, loginWithGoogle, logout, sendResetCode, resetPassword, updateUser, changePassword, saveAddress, deleteAddress, b2bOrders, myOrders, refreshOrders, fetchOrder, cacheOrder, placeB2BOrder, updateOrder, getOrder],
+    [user, loading, login, loginB2B, isB2B, register, loginWithGoogle, logout, sendResetCode, resetPassword, updateUser, changePassword, saveAddress, deleteAddress, myOrders, refreshOrders, fetchOrder, cacheOrder, getOrder],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

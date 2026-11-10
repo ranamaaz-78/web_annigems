@@ -13,8 +13,11 @@ export const CONFIG_COMBOS = [];
 export const CONFIG_SIZES = [];
 export const SIZE_CHART = [];
 export const SIZE_GUIDE_STEPS = [];
+// Signed-in business account: % off the ring total (Design Your Ring row of its tier); null for retail.
+export const CONFIG_B2B = { percent: null };
 
 export function hydrateConfigurator(c) {
+  CONFIG_B2B.percent = c.b2b_percent ?? null;
   fill(CONFIG_STEPS, c.steps);
   fill(CONFIG_COMBOS, c.combos);
   fill(CONFIG_RINGS, (c.rings ?? []).map(mapRing));

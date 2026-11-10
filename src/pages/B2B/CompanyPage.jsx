@@ -13,7 +13,7 @@ export default function CompanyPage() {
 
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const errs = {
       firstName: validateRequired(form.firstName, 'First name'),
@@ -22,8 +22,8 @@ export default function CompanyPage() {
     };
     setErrors(errs);
     if (hasErrors(errs)) return;
-    updateUser(form);
-    showToast('Contact details updated');
+    const res = await updateUser(form);
+    showToast(res.ok ? 'Contact details updated' : res.error);
   };
 
   return (
@@ -37,22 +37,32 @@ export default function CompanyPage() {
           </div>
           <div className="cs-row">
             <span>Business type</span>
-            <span>{user.company?.type}</span>
+            <span>{user.company?.type || '-'}</span>
           </div>
           <div className="cs-row">
             <span>GST / Tax ID</span>
-            <span>{user.company?.gst || '-'}</span>
+            <span>{user.company?.taxId || '-'}</span>
           </div>
           <div className="cs-row">
-            <span>Payment terms</span>
-            <span>{user.creditTermsDays} days</span>
+            <span>Membership tier</span>
+            <span>{user.company?.tier || '-'}</span>
+          </div>
+          {user.company?.salesPerson && (
+            <div className="cs-row">
+              <span>Sales person</span>
+              <span>{user.company.salesPerson.name}</span>
+            </div>
+          )}
+          <div className="cs-row">
+            <span>Payment</span>
+            <span>Cash on delivery</span>
           </div>
           <div className="cs-row">
             <span>Account since</span>
             <span>{user.createdAt ? formatDate(user.createdAt) : '-'}</span>
           </div>
         </div>
-        <p className="muted">Company details are managed by our team. Contact us to change them.</p>
+        <p className="muted">Company details and your tier are managed by your sales person. Contact them to change them.</p>
       </div>
 
       <div className="side-card" data-reveal="up">

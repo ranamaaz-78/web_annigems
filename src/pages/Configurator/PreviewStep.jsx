@@ -2,15 +2,13 @@ import { useEffect, useState } from 'react';
 import { api, errorText } from '../../api/client';
 import { major } from '../../api/mappers';
 import { GOLD_RATE } from '../../data/site';
-import { useB2B } from '../../hooks/useB2B';
 import { usePricing } from '../../hooks/usePricing';
 import { formatPrice, formatPriceRounded } from '../../utils/format';
-import { configuratorTotal, goldValue, ruleLabel } from '../../utils/pricing';
+import { configuratorTotal, goldValue } from '../../utils/pricing';
 import PanelHeader from './PanelHeader';
 
 export default function PreviewStep({ ring, size, stone, onAddToCart, onRestart }) {
-  const { isB2B, configPrice } = usePricing();
-  const { pricing } = useB2B();
+  const { isB2B, configPrice, ringPercent } = usePricing();
   // Live price from POST /configurator/price (gold rate of the moment); the catalogue values show meanwhile.
   const [live, setLive] = useState(null);
   const [error, setError] = useState('');
@@ -26,7 +24,9 @@ export default function PreviewStep({ ring, size, stone, onAddToCart, onRestart 
           gold: major(d.gold_value),
           craft: major(d.craft_fee),
           stone: major(d.stone_price),
+          // Business accounts: `total` is already the tier price, `retail_total` the normal one.
           total: major(d.total),
+          retailTotal: d.retail_total ? major(d.retail_total) : major(d.total),
           perOz: d.gold_rate?.per_oz ? major(d.gold_rate.per_oz) : null,
           image: d.image,
           delivery: d.delivery_text,
@@ -41,8 +41,8 @@ export default function PreviewStep({ ring, size, stone, onAddToCart, onRestart 
   const gold = live?.gold ?? goldValue(ring);
   const craft = live?.craft ?? ring.craftFee;
   const gemPrice = live?.stone ?? stone.gemPrice;
-  const retailTotal = live?.total ?? configuratorTotal(ring, stone);
-  const total = configPrice(retailTotal);
+  const retailTotal = live?.retailTotal ?? configuratorTotal(ring, stone);
+  const total = live?.total ?? configPrice(retailTotal);
   const perOz = live?.perOz ?? GOLD_RATE.perOz;
   const image = live?.image ?? stone.images[ring.id] ?? ring.image;
 
@@ -106,9 +106,9 @@ export default function PreviewStep({ ring, size, stone, onAddToCart, onRestart 
                 <span>Gemstone ({stone.name})</span>
                 <span>{formatPriceRounded(gemPrice)}</span>
               </div>
-              {isB2B && (
+              {isB2B && retailTotal > total && (
                 <div className="pc-row b2b-disc">
-                  <span>Business pricing ({ruleLabel(pricing.config, true)})</span>
+                  <span>Business pricing ({ringPercent}% off)</span>
                   <span>−{formatPrice(retailTotal - total)}</span>
                 </div>
               )}

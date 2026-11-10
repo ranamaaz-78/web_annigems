@@ -1,79 +1,68 @@
 import { Link } from 'react-router-dom';
 import OrderStatusBadge from '../../components/common/OrderStatusBadge';
 import { useAuth } from '../../hooks/useAuth';
-import { creditSummary } from '../../utils/credit';
 import { formatDate, formatPrice } from '../../utils/format';
-import { isFulfilling } from '../../utils/orderStatus';
 
-// What needs the business user's attention, by order.
-const attention = (o) => {
-  if (o.approval === 'approved' && o.payment.status === 'unpaid') return 'Approved - choose how to pay';
-  if (o.payment.status === 'link_sent') return 'Payment link is ready';
-  return null;
-};
+const DELIVERED = 4;
 
+// Business home: membership, sales person, order counts and recent orders (all from the API).
 export default function DashboardPage() {
-  const { user, myOrders, orders } = useAuth();
-  const credit = creditSummary(user, orders);
-  const pending = myOrders.filter((o) => o.approval === 'pending').length;
-  const inProduction = myOrders.filter((o) => isFulfilling(o) && o.stage < 4).length;
-  const todo = myOrders.filter(attention);
-  const usedPct = credit.limit ? Math.min(100, (credit.used / credit.limit) * 100) : 0;
+  const { user, myOrders } = useAuth();
+  const company = user.company ?? {};
+  const live = myOrders.filter((o) => o.status !== 'cancelled');
+  const awaiting = myOrders.filter((o) => o.status === 'awaiting_approval').length;
+  const inProgress = myOrders.filter((o) => o.status === 'confirmed' && o.stage < DELIVERED).length;
+  const delivered = myOrders.filter((o) => o.status === 'confirmed' && o.stage >= DELIVERED).length;
+  const spend = live.reduce((s, o) => s + o.totals.total, 0);
 
   return (
     <>
       <div className="stat-row four" data-stagger=".stat-card">
         <div className="stat-card">
-          <span className="stat-num">{formatPrice(credit.available)}</span>
-          <span>Available credit</span>
-        </div>
-        <div className="stat-card">
-          <span className="stat-num">{pending}</span>
+          <span className="stat-num">{awaiting}</span>
           <span>Awaiting approval</span>
         </div>
         <div className="stat-card">
-          <span className="stat-num">{todo.length}</span>
-          <span>Need your action</span>
+          <span className="stat-num">{inProgress}</span>
+          <span>In progress</span>
         </div>
         <div className="stat-card">
-          <span className="stat-num">{inProduction}</span>
-          <span>In production</span>
+          <span className="stat-num">{delivered}</span>
+          <span>Delivered</span>
+        </div>
+        <div className="stat-card">
+          <span className="stat-num">{formatPrice(spend)}</span>
+          <span>Total ordered</span>
         </div>
       </div>
 
       <div className="side-card" data-reveal="up">
         <div className="acct-head">
-          <h3 className="cs-title">Credit line</h3>
-          <Link to="/b2b/credit" className="auth-link">
-            Manage credit →
+          <h3 className="cs-title">Your membership</h3>
+          <Link to="/b2b/company" className="auth-link">
+            Company profile →
           </Link>
         </div>
-        <div className="credit-bar">
-          <span style={{ width: `${usedPct}%` }} />
+        <div className="cs-rows">
+          <div className="cs-row">
+            <span>Tier</span>
+            <span>{company.tier || '-'}</span>
+          </div>
+          {company.salesPerson && (
+            <div className="cs-row">
+              <span>Your sales person</span>
+              <span>
+                {company.salesPerson.name} · <a href={`mailto:${company.salesPerson.email}`}>{company.salesPerson.email}</a>
+              </span>
+            </div>
+          )}
+          <div className="cs-row">
+            <span>Payment</span>
+            <span>Cash on delivery</span>
+          </div>
         </div>
-        <p className="muted">
-          {formatPrice(credit.used)} used of {formatPrice(credit.limit)} · {user.creditTermsDays}-day terms
-        </p>
+        <p className="muted">Your member prices are shown across the catalogue and in your bag. Each order is approved by our team before crafting starts.</p>
       </div>
-
-      {todo.length > 0 && (
-        <div className="side-card" data-reveal="up">
-          <h3 className="cs-title">Needs your attention</h3>
-          <ul className="b2b-todo">
-            {todo.map((o) => (
-              <li key={o.id}>
-                <div>
-                  <strong>#{o.id}</strong>
-                  <small>{attention(o)}</small>
-                </div>
-                <Link to={`/b2b/orders/${o.id}`} className="btn-outline btn-sm">
-                  Open
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
 
       <div className="side-card" data-reveal="up">
         <div className="acct-head">
@@ -83,13 +72,15 @@ export default function DashboardPage() {
           </Link>
         </div>
         {myOrders.length === 0 ? (
-          <p className="muted">No orders yet. Browse the catalogue to place your first trade order.</p>
+          <p className="muted">No orders yet. Browse the catalogue to place your first order.</p>
         ) : (
           <ul className="b2b-todo">
-            {myOrders.slice(0, 4).map((o) => (
+            {myOrders.slice(0, 5).map((o) => (
               <li key={o.id}>
                 <div>
-                  <strong>#{o.id}</strong>
+                  <Link to={`/b2b/orders/${o.id}`}>
+                    <strong>#{o.id}</strong>
+                  </Link>
                   <small>
                     {formatDate(o.createdAt)} · {formatPrice(o.totals.total)}
                   </small>

@@ -5,12 +5,9 @@ import ProtectedRoute from './components/account/ProtectedRoute';
 import Layout from './components/layout/Layout';
 import B2BLayout from './pages/B2B/B2BLayout';
 import B2BLoginPage from './pages/B2B/B2BLoginPage';
-import B2BOrderDetailPage from './pages/B2B/B2BOrderDetailPage';
 import B2BOrdersPage from './pages/B2B/B2BOrdersPage';
 import CompanyPage from './pages/B2B/CompanyPage';
-import CreditPage from './pages/B2B/CreditPage';
 import DashboardPage from './pages/B2B/DashboardPage';
-import PayPage from './pages/B2B/PayPage';
 import WholesalePage from './pages/B2B/WholesalePage';
 import ServicesPage from './pages/Services/ServicesPage';
 import AboutPage from './pages/About/AboutPage';
@@ -75,13 +72,11 @@ export default function App() {
           <Route path="b2b" element={<B2BLayout />}>
             <Route index element={<DashboardPage />} />
             <Route path="orders" element={<B2BOrdersPage />} />
-            <Route path="orders/:id" element={<B2BOrderDetailPage />} />
-            <Route path="credit" element={<CreditPage />} />
+            <Route path="orders/:id" element={<OrderDetailPage />} />
             <Route path="company" element={<CompanyPage />} />
             <Route path="addresses" element={<AddressesPage />} />
             <Route path="password" element={<PasswordPage />} />
           </Route>
-          <Route path="b2b/pay/:id" element={<PayPage />} />
         </Route>
 
         <Route path="wholesale" element={<WholesalePage />} />

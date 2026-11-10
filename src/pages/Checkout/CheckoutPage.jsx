@@ -19,10 +19,11 @@ const newKey = () => (window.crypto?.randomUUID ? window.crypto.randomUUID() : `
 // Retail checkout: POST /checkout creates the order (prices are computed by the API) and returns a
 // Stripe PaymentIntent, which is confirmed here with the card fields. The order is then marked paid
 // by the Stripe webhook; /order-success/:id follows its status.
-// Business (B2B) checkout is unchanged: a local demo order sent for approval.
+// Business (B2B) checkout: the same POST /checkout with their member prices, cash on delivery,
+// no payment step; the order waits for staff approval.
 function Checkout() {
   const { cart, totals, couponCode, clearCart, removeCoupon, shippingMethod, setShippingMethod, shippingOptions, cartValid, quoting } = useShop();
-  const { user, loading, placeB2BOrder, isB2B, cacheOrder } = useAuth();
+  const { user, loading, isB2B, cacheOrder } = useAuth();
   const stripe = useStripe();
   const elements = useElements();
   const navigate = useNavigate();
@@ -41,17 +42,20 @@ function Checkout() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handlePlaceOrder = async () => {
+  // notes: business orders only (reference / notes for our team → customer_note)
+  const handlePlaceOrder = async ({ notes = '' } = {}) => {
     if (busy) return;
-    if (CARD_PAYMENTS_ENABLED && (!stripe || !elements)) return setError('Card payments are not available right now. Please try again later.');
+    const card = CARD_PAYMENTS_ENABLED && !isB2B;
+    if (card && (!stripe || !elements)) return setError('Card payments are not available right now. Please try again later.');
     if (!cartValid) return setError(quoting ? 'Updating your order total… please try again in a moment.' : 'Some items in your bag are unavailable. Please review your cart.');
 
     const body = {
       items: cart.map(toApiLine),
       shipping_method: shippingMethod,
-      coupon_code: couponCode || null,
-      // TEMPORARY: cash on delivery while Stripe is not set up (see CARD_PAYMENTS_ENABLED).
-      payment_method: CARD_PAYMENTS_ENABLED ? 'card' : 'cod',
+      coupon_code: isB2B ? null : couponCode || null,
+      // Business accounts: always cash on delivery. Retail: TEMPORARY cash on delivery while Stripe is not set up.
+      payment_method: card ? 'card' : 'cod',
+      customer_note: notes.trim() || null,
       address: {
         name: address.name,
         phone: address.phone || null,
@@ -71,7 +75,7 @@ function Checkout() {
       const res = await api('checkout', { method: 'POST', body, headers: { 'Idempotency-Key': attempt.current.key } });
       const order = cacheOrder(res.data.order);
       const payment = res.data.payment;
-      if (CARD_PAYMENTS_ENABLED && payment?.client_secret) {
+      if (card && payment?.client_secret) {
         const result = await stripe.confirmCardPayment(payment.client_secret, {
           payment_method: { card: elements.getElement(CardNumberElement), billing_details: { name: cardName.trim(), email: user?.email } },
         });
@@ -88,13 +92,6 @@ function Checkout() {
       setBusy(false);
       return setError(errorText(err, 'We could not place your order. Please try again.'));
     }
-  };
-
-  const handleSubmitB2B = ({ poNumber, notes }) => {
-    const order = placeB2BOrder({ items: cart, totals, address, shippingMethod, poNumber, notes });
-    setPlaced(true);
-    clearCart();
-    navigate(`/order-success/${order.id}`, { replace: true });
   };
 
   if (placed) return null;
@@ -121,7 +118,7 @@ function Checkout() {
             }}
           />
           {isB2B ? (
-            <B2BReviewStep active={step === 2} cart={cart} onBack={() => goToStep(1)} onSubmit={handleSubmitB2B} />
+            <B2BReviewStep active={step === 2} cart={cart} busy={busy} error={error} onBack={() => goToStep(1)} onSubmit={handlePlaceOrder} />
           ) : (
             <>
               <PaymentStep

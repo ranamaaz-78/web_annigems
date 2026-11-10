@@ -6,11 +6,10 @@ import PageHero from '../../components/common/PageHero';
 import Timeline from '../../components/common/Timeline';
 import { useAuth } from '../../hooks/useAuth';
 import { formatPrice } from '../../utils/format';
-import { orderTimeline } from '../../utils/orderStatus';
 import { validateEmail, validateRequired } from '../../utils/validate';
 
 export default function TrackOrderPage() {
-  const { fetchOrder, getOrder, user, isB2B, loading } = useAuth();
+  const { fetchOrder, getOrder, user, loading } = useAuth();
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const [form, setForm] = useState({ id: params.get('id') || '', email: params.get('email') || '' });
@@ -18,7 +17,7 @@ export default function TrackOrderPage() {
   const [result, setResult] = useState(null);
   const [notFound, setNotFound] = useState(false);
   const [busy, setBusy] = useState(false);
-  const signedIn = Boolean(user) && !isB2B;
+  const signedIn = Boolean(user);
 
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
@@ -103,7 +102,7 @@ export default function TrackOrderPage() {
             </div>
             <OrderStatusBadge order={result} />
           </div>
-          <Timeline {...orderTimeline(result)} createdAt={result.createdAt} />
+          <Timeline stage={result.stage} createdAt={result.createdAt} />
           <p className="muted">
             Questions about your order? <Link to="/contact">Contact us</Link>.
           </p>
