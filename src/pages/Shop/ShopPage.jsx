@@ -9,7 +9,7 @@ import { capitalize } from '../../utils/format';
 import { filterProducts } from './filterProducts';
 import ShopSidebar from './ShopSidebar';
 
-const VALID_CATEGORIES = ['all', ...CATEGORIES.map((c) => c.id)];
+const VALID_CATEGORIES = ['all', 'jewellery', ...CATEGORIES.map((c) => c.id)];
 const VALID_SORTS = SORT_OPTIONS.map((o) => o.value);
 
 export default function ShopPage() {

@@ -1,4 +1,4 @@
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import { GOLD_RATE } from '../../data/site';
 import { useAuth } from '../../hooks/useAuth';
 import { useScrolled, useScrollingDown } from '../../hooks/useScrolled';
@@ -12,12 +12,19 @@ import MegaMenu from './MegaMenu';
 
 const navClass = ({ isActive }) => `nav-link${isActive ? ' active' : ''}`;
 
+// /shop?cat=… links share one path, so "active" has to compare the category too.
+const shopCat = (search) => new URLSearchParams(search).get('cat');
+
 export default function Navbar() {
   const scrolled = useScrolled(60);
   const hidden = useScrollingDown();
   const { cartCount } = useShop();
   const { openSearch, openCart, toggleMenu } = useUI();
   const { user, isB2B } = useAuth();
+  const { pathname, search } = useLocation();
+  const onShop = pathname === '/shop';
+  const cat = shopCat(search);
+  const shopClass = (key) => `nav-link${onShop && cat === key ? ' active' : ''}`;
 
   return (
     <nav className={`navbar${scrolled ? ' scrolled' : ''}${hidden ? ' nav-hidden' : ''}`}>
@@ -27,18 +34,21 @@ export default function Navbar() {
         </Link>
 
         <div className="nav-links">
+          <Link className={shopClass('gemstones')} to="/shop?cat=gemstones">
+            Gemstones
+          </Link>
+          <Link className={shopClass('mountings')} to="/shop?cat=mountings">
+            Mountings
+          </Link>
           <div className="has-mega">
-            <NavLink className={navClass} to="/shop">
-              Shop
-            </NavLink>
+            <Link className={`nav-link${onShop && cat !== 'gemstones' && cat !== 'mountings' ? ' active' : ''}`} to="/shop?cat=jewellery">
+              Jewellery
+            </Link>
             <MegaMenu />
           </div>
           <NavLink className="nav-link hl" to="/design-your-ring">
-            ✦ Design Your Ring
+            Design Your Ring
           </NavLink>
-          <Link className="nav-link" to="/shop">
-            Collections
-          </Link>
           <NavLink className={navClass} to="/about">
             About
           </NavLink>

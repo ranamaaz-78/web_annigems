@@ -1,9 +1,14 @@
 // Pure filter + sort over the static catalogue.
+// 'jewellery' is every category except the raw gemstones and mountings.
+const NON_JEWELLERY = ['gemstones', 'mountings'];
+
 export function filterProducts(products, { category, maxPrice, stones, sort }) {
   const stoneKeys = stones.map((s) => s.toLowerCase());
 
   const result = products.filter((p) => {
-    if (category !== 'all' && p.category !== category) return false;
+    if (category === 'jewellery') {
+      if (NON_JEWELLERY.includes(p.category)) return false;
+    } else if (category !== 'all' && p.category !== category) return false;
     if (p.price > maxPrice) return false;
     if (stoneKeys.length) {
       const stone = p.stone.toLowerCase();
