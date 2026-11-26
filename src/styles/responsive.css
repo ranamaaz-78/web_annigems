@@ -15,11 +15,11 @@
   .conf-size-layout{grid-template-columns:1fr;gap:24px}
 }
 @media(max-width:768px){
-  .nav-links,.gold-ticker{display:none}
+  .nav-links{display:none}
   .hamburger{display:flex}
   .cats-grid,.prod-grid,.prod-grid.cols5{grid-template-columns:repeat(2,1fr)}
-  .hero-content{padding:80px 32px}
-  .hero-scroll{left:32px}
+  .hero-content{padding:48px 20px}
+  .hero-scroll{display:none}
   .section{padding:60px 20px}
   .shop-page,.pd-wrap,.co-wrap,.page-wrap,.conf-wrap{padding-left:20px;padding-right:20px}
   .pd-layout{grid-template-columns:1fr;gap:36px}
@@ -47,12 +47,89 @@
 
 /* Navbar fit on small screens (logo + icons overflowed the viewport) */
 @media(max-width:768px){
-  .nav-inner{padding:0 16px;gap:12px}
-  .nav-right{gap:6px}
+  :root{--nav-top:10px;--nav-h:56px}
+  .navbar{width:94%}
+  .nav-inner{padding:0 8px 0 18px;gap:10px}
+  .nav-right{gap:2px}
   .nav-logo-img{height:36px}
   .nav-logo-text{font-size:20px}
 }
 @media(max-width:560px){
   .nav-logo-text{display:none}
   .nav-icon-wl{display:none} /* Wishlist stays reachable from the mobile menu */
+}
+
+/* Glass pill: drop or tighten things in steps as the page narrows (widths measured in a real browser) */
+.nav-inner{grid-template-columns:auto minmax(0,1fr) auto}
+@media(max-width:1260px){
+  .nav-inner{padding:0 10px 0 20px;gap:14px}
+  .nav-link{padding:10px 9px;letter-spacing:.06em;font-size:10.5px}
+  .nav-link.hl{margin-left:2px}
+  .nav-logo-img{height:36px}
+  .nav-logo-text{font-size:19px;letter-spacing:.07em}
+}
+@media(max-width:1140px){
+  .nav-links{display:none}
+  .hamburger{display:flex}
+  .nav-inner{grid-template-columns:1fr auto}
+  .nav-logo-img{height:40px}
+  .nav-logo-text{font-size:22px;letter-spacing:.09em}
+}
+
+/* Phones: text covers most of the banner, so shade it evenly */
+@media(max-width:768px){
+  [data-theme="dark"] .hero-grad{background:linear-gradient(to bottom,rgba(10,8,5,.45),transparent 20%),linear-gradient(to top,var(--bg),transparent 18%),linear-gradient(90deg,rgba(14,12,8,.9) 0%,rgba(14,12,8,.7) 60%,rgba(14,12,8,.35) 100%)!important}
+  [data-theme="light"] .hero-grad{background:linear-gradient(to bottom,rgba(250,246,238,.55),transparent 20%),linear-gradient(to top,var(--bg),transparent 18%),linear-gradient(90deg,rgba(250,246,238,.94) 0%,rgba(250,246,238,.78) 60%,rgba(250,246,238,.4) 100%)!important}
+}
+
+/* Shop: 4 cards per row on laptops and desktops (3 on tablets, 2 on phones) */
+@media(min-width:1101px){
+  .shop-page .prod-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+  .shop-page .pc-body{padding:14px}
+  .shop-page .pc-price-row{flex-wrap:wrap}
+}
+/* the older 1024px rule keeps the filters in one column; keep that after the new grid width */
+@media(max-width:1024px){.shop-layout{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:768px){.shop-page{padding:0 0 60px}}
+
+/* Shop: a bit more breathing room at the sides */
+.shop-page{width:86%;max-width:1280px}
+@media(max-width:1280px){.shop-page{width:89%}}
+@media(max-width:768px){.shop-page{width:90%}}
+
+/* Shop filters scroll on their own beside the products; at either end the page takes over */
+.sidebar[data-lenis-prevent]{overscroll-behavior:auto!important}
+@media(min-width:1025px){
+  .sidebar{top:var(--nav-offset);max-height:calc(100vh - var(--nav-offset) - 16px);padding-right:10px;padding-bottom:12px;scrollbar-width:thin;scrollbar-color:var(--bdr3) transparent}
+}
+
+/* Shop filters as a bottom sheet on phones and tablets */
+@media(max-width:1024px){
+  .filter-btn{display:inline-flex;align-items:center;gap:8px;padding:9px 18px;border-radius:999px;border:1px solid var(--bdr3);color:var(--gold);font-size:12px;font-weight:600;letter-spacing:.06em}
+  .filter-btn b{min-width:18px;height:18px;padding:0 5px;border-radius:999px;display:grid;place-items:center;background:var(--gold-grad);color:#1a1710;font-size:10px}
+  .shop-toolbar{gap:10px}
+  .shop-count{margin-right:auto}
+  .sb-backdrop{display:block;position:fixed;inset:0;z-index:390;background:var(--modal-bg);opacity:0;visibility:hidden;transition:var(--tr)}
+  .sb-backdrop.open{opacity:1;visibility:visible}
+  .sidebar{position:fixed;top:auto;left:0;right:0;bottom:0;z-index:400;width:100%;max-width:560px;margin:0 auto;max-height:82vh;max-height:82dvh;padding:0 22px;
+    background:var(--bg1);border:1px solid var(--bdr2);border-bottom:0;border-radius:24px 24px 0 0;box-shadow:0 -18px 50px rgba(0,0,0,.4);
+    transform:translateY(105%);visibility:hidden;transition:transform .35s cubic-bezier(.4,0,.2,1),visibility .35s}
+  .sidebar.open{transform:none;visibility:visible}
+  .sidebar[data-lenis-prevent]{overscroll-behavior:contain!important}
+  .sb-head{display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:1;background:var(--bg1);padding:16px 0 12px;margin-bottom:18px;border-bottom:1px solid var(--bdr);font-family:var(--serif);font-size:22px}
+  .sb-head button{width:34px;height:34px;border-radius:50%;border:1px solid var(--bdr2);color:var(--t2);font-size:13px}
+  .sidebar .sb-section{margin-bottom:20px;padding-bottom:20px}
+  .sidebar .sb-cats{flex-direction:row;flex-wrap:wrap;gap:8px}
+  .sidebar .sb-cat{border:1px solid var(--bdr2);border-radius:999px;padding:8px 14px}
+  .sidebar .chk-filters{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .sb-foot{display:block;position:sticky;bottom:0;background:var(--bg1);padding:12px 0 18px;margin-top:6px}
+}
+
+/* Shop toolbar: the count never breaks; on narrow phones it gets its own line under the controls */
+.shop-count{white-space:nowrap}
+@media(max-width:480px){
+  .shop-toolbar{flex-wrap:wrap;row-gap:12px}
+  .shop-toolbar .filter-btn,.shop-toolbar .sort-select{height:38px}
+  .shop-toolbar .sort-select{margin-left:auto;max-width:52%;min-width:0;border-radius:999px;padding:0 10px}
+  .shop-toolbar .shop-count{order:3;width:100%;margin:0}
 }

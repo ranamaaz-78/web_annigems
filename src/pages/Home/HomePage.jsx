@@ -2,10 +2,11 @@ import { FEATURED_IDS, NEW_ARRIVAL_IDS, getProductsByIds } from '../../data/prod
 import CategoryGrid from './sections/CategoryGrid';
 import DesignRingBanner from './sections/DesignRingBanner';
 import Hero from './sections/Hero';
+import MetalFeed from './sections/MetalFeed';
 import Newsletter from './sections/Newsletter';
 import ProductShowcase from './sections/ProductShowcase';
 import Testimonials from './sections/Testimonials';
-import UspBar from './sections/UspBar';
+
 
 const featured = getProductsByIds(FEATURED_IDS);
 const newArrivals = getProductsByIds(NEW_ARRIVAL_IDS);
@@ -14,7 +15,7 @@ export default function HomePage() {
   return (
     <>
       <Hero />
-      <UspBar />
+      <MetalFeed />
       <CategoryGrid />
       <ProductShowcase
         eyebrow="Handpicked for You"

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { api } from '../../api/client';
+import { getLenis } from '../../lib/lenis';
 import { useSearchParams } from 'react-router-dom';
 import Breadcrumb from '../../components/common/Breadcrumb';
 import ProductGrid from '../../components/product/ProductGrid';
@@ -16,6 +17,7 @@ export default function ShopPage() {
   // Category, sort and max price live in the URL so links and the back button work
   const [params, setParams] = useSearchParams();
   const [stones, setStones] = useState([]);
+  const [filtersOpen, setFiltersOpen] = useState(false); // bottom sheet on small screens
 
   const category = VALID_CATEGORIES.includes(params.get('cat')) ? params.get('cat') : 'all';
   const sort = VALID_SORTS.includes(params.get('sort')) ? params.get('sort') : 'featured';
@@ -33,6 +35,26 @@ export default function ShopPage() {
       { replace: key === 'max' }, // dragging the slider shouldn't flood history
     );
   };
+
+  // While the sheet is open: page scroll is locked, Escape or a wider window closes it.
+  useEffect(() => {
+    if (!filtersOpen) return undefined;
+    const close = () => setFiltersOpen(false);
+    const onKey = (e) => e.key === 'Escape' && close();
+    const wide = window.matchMedia('(min-width: 1025px)');
+    document.body.style.overflow = 'hidden';
+    getLenis()?.stop();
+    window.addEventListener('keydown', onKey);
+    wide.addEventListener('change', close);
+    return () => {
+      document.body.style.overflow = '';
+      getLenis()?.start();
+      window.removeEventListener('keydown', onKey);
+      wide.removeEventListener('change', close);
+    };
+  }, [filtersOpen]);
+
+  const activeFilters = (category !== 'all' ? 1 : 0) + (maxPrice < MAX_PRICE ? 1 : 0) + stones.length;
 
   const toggleStone = (stone) =>
     setStones((prev) => (prev.includes(stone) ? prev.filter((s) => s !== stone) : [...prev, stone]));
@@ -87,9 +109,25 @@ export default function ShopPage() {
           onMaxPrice={(v) => updateParam('max', v, MAX_PRICE)}
           onToggleStone={toggleStone}
           onReset={resetFilters}
+          open={filtersOpen}
+          onClose={() => setFiltersOpen(false)}
+          count={count}
         />
         <div>
           <div className="shop-toolbar">
+            <button
+              type="button"
+              className="filter-btn"
+              onClick={() => setFiltersOpen(true)}
+              aria-expanded={filtersOpen}
+              aria-controls="shop-filters"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                <path d="M4 6h16M7 12h10M10 18h4" />
+              </svg>
+              Filters
+              {activeFilters > 0 && <b>{activeFilters}</b>}
+            </button>
             <p className="shop-count">{count} pieces</p>
             <select
               className="sort-select"
@@ -104,7 +142,7 @@ export default function ShopPage() {
               ))}
             </select>
           </div>
-          <ProductGrid products={products} variant="cols3">
+          <ProductGrid products={products}>
             {products.length === 0 && (
               <div className="shop-empty">
                 <p>No pieces match your filters.</p>

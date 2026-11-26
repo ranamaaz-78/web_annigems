@@ -1,6 +1,6 @@
 /* SHOP */
-.shop-page{max-width:1240px;margin:0 auto;padding:0 40px 80px}
-.shop-layout{display:grid;grid-template-columns:240px 1fr;gap:44px}
+.shop-page{width:92%;max-width:1360px;margin:0 auto;padding:0 0 80px}
+.shop-layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:32px}
 .sidebar{position:sticky;top:88px;align-self:flex-start;max-height:calc(100vh - 100px);overflow-y:auto}
 .sb-section{margin-bottom:28px;padding-bottom:28px;border-bottom:1px solid var(--bdr)}
 .sb-section:last-of-type{border-bottom:none}
@@ -20,3 +20,6 @@
 
 .shop-empty{grid-column:1/-1;text-align:center;padding:80px;color:var(--t3)}
 .shop-empty p{margin-bottom:20px}
+
+/* Filter button and sheet pieces only exist below 1025px */
+.filter-btn,.sb-head,.sb-foot,.sb-backdrop{display:none}

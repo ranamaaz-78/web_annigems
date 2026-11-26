@@ -3,9 +3,18 @@ import { formatPrice, formatPriceRounded } from '../../utils/format';
 
 const CATEGORY_OPTIONS = [{ id: 'all', label: 'All Jewelry' }, ...CATEGORIES];
 
-export default function ShopSidebar({ category, maxPrice, stones, onCategory, onMaxPrice, onToggleStone, onReset }) {
+export default function ShopSidebar({ category, maxPrice, stones, onCategory, onMaxPrice, onToggleStone, onReset, open, onClose, count }) {
   return (
-    <aside className="sidebar">
+    <>
+    {/* Phones and tablets: the sidebar is a bottom sheet opened by the Filters button */}
+    <div className={`sb-backdrop${open ? ' open' : ''}`} onClick={onClose} aria-hidden="true" />
+    <aside className={`sidebar${open ? ' open' : ''}`} id="shop-filters" aria-label="Filters" data-lenis-prevent>
+      <div className="sb-head">
+        <span>Filters</span>
+        <button type="button" onClick={onClose} aria-label="Close filters">
+          ✕
+        </button>
+      </div>
       <div className="sb-section">
         <p className="sb-title">Category</p>
         <div className="sb-cats">
@@ -49,6 +58,12 @@ export default function ShopSidebar({ category, maxPrice, stones, onCategory, on
       <button className="btn-ghost btn-full" onClick={onReset}>
         Clear All Filters
       </button>
+      <div className="sb-foot">
+        <button type="button" className="btn-gold btn-full" onClick={onClose}>
+          Show {count} pieces
+        </button>
+      </div>
     </aside>
+    </>
   );
 }

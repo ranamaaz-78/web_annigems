@@ -29,23 +29,12 @@
 [data-theme="light"] .footer{background:var(--bg1)}
 [data-theme="light"] .sc-rarity.elite{color:#333;border-color:rgba(0,0,0,.2);background:rgba(0,0,0,.05)}
 
-/* ─── Light mode: Navbar clearly separated from hero banner ─── */
-[data-theme="light"] .navbar{
-  background:rgba(255,255,255,.97);
-  border-bottom:1px solid rgba(160,120,40,.25);
-  box-shadow:0 2px 20px rgba(0,0,0,.10);
-}
-[data-theme="light"] .navbar.scrolled{
-  background:#ffffff;
-  box-shadow:0 4px 28px rgba(0,0,0,.14);
-  border-bottom-color:rgba(160,120,40,.3);
-}
+/* ─── Light mode: navbar glass comes from the --nav-* tokens in navbar.css ─── */
+[data-theme="light"] .nav-right{background:rgba(255,255,255,.5);border-color:rgba(160,120,40,.18)}
 [data-theme="light"] .nav-link{color:rgba(26,23,16,.65)}
 [data-theme="light"] .nav-link:hover{color:var(--gold)}
 [data-theme="light"] .nav-link.hl{color:var(--gold)!important}
-[data-theme="light"] .nav-icon{border-color:rgba(160,120,40,.2);color:rgba(26,23,16,.6)}
-[data-theme="light"] .nav-icon:hover{border-color:var(--gold);color:var(--gold)}
-[data-theme="light"] .gold-ticker{background:rgba(201,168,76,.08);border-color:rgba(160,120,40,.25)}
-[data-theme="light"] .gt-unit{color:rgba(26,23,16,.4)}
+[data-theme="light"] .nav-icon{color:rgba(26,23,16,.6)}
+[data-theme="light"] .nav-icon:hover{color:var(--gold)}
 [data-theme="light"] .hamburger span{background:rgba(26,23,16,.6)}
 [data-theme="light"] .hamburger{border-color:rgba(160,120,40,.2)}

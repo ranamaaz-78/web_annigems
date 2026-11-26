@@ -8,7 +8,7 @@ html.lenis,html.lenis body{height:auto}
 [data-magnetic]{will-change:transform}
 @media (prefers-reduced-motion:reduce){.page-transition{display:none}}
 .navbar{transition:var(--tr),transform .45s cubic-bezier(.4,0,.2,1)}
-.navbar.nav-hidden{transform:translateY(-100%)}
+.navbar.nav-hidden{transform:translateY(calc(-100% - 30px))}
 .navbar:hover,.navbar:focus-within{transform:none}
 [data-magnetic]{transition:box-shadow var(--tr),background var(--tr),color var(--tr),border-color var(--tr),opacity var(--tr)}
 .hero-ctas>*{transition:box-shadow var(--tr),background var(--tr),color var(--tr),border-color var(--tr)}

@@ -1,10 +1,8 @@
 import { Link, NavLink, useLocation } from 'react-router-dom';
-import { GOLD_RATE } from '../../data/site';
 import { useAuth } from '../../hooks/useAuth';
 import { useScrolled, useScrollingDown } from '../../hooks/useScrolled';
 import { useShop } from '../../hooks/useShop';
 import { useUI } from '../../hooks/useUI';
-import { formatPrice } from '../../utils/format';
 import { BagIcon, HeartIcon, SearchIcon, UserIcon } from '../common/Icons';
 import Logo from '../common/Logo';
 import ThemeToggle from '../common/ThemeToggle';
@@ -58,12 +56,6 @@ export default function Navbar() {
         </div>
 
         <div className="nav-right">
-          <div className="gold-ticker" title="Indicative gold rate">
-            <span className="gt-au">Au</span>
-            <span className="gt-price">{formatPrice(GOLD_RATE.perOz)}</span>
-            <span className="gt-unit">/oz</span>
-            <span className="gt-dot live" />
-          </div>
           <button className="nav-icon" onClick={openSearch} title="Search" aria-label="Search">
             <SearchIcon />
           </button>
