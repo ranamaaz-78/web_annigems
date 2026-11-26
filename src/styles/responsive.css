@@ -3,7 +3,6 @@
   .prod-grid{grid-template-columns:repeat(3,1fr)}
   .prod-grid.cols5{grid-template-columns:repeat(3,1fr)}
   .test-grid{grid-template-columns:repeat(2,1fr)}
-  .footer-top{grid-template-columns:1fr 1fr 1fr}
 }
 @media(max-width:1024px){
   .shop-layout{grid-template-columns:1fr}
@@ -23,8 +22,6 @@
   .qv-inner{grid-template-columns:1fr}
   .qv-img-col{border-right:none;border-bottom:1px solid var(--bdr)}
   .nl-inner{grid-template-columns:1fr}
-  .footer-top{grid-template-columns:1fr 1fr;gap:28px}
-  .footer-bottom{flex-direction:column;text-align:center}
   .drb-content{padding:60px 32px}
   .usp-bar{padding:14px 20px;gap:20px}
 }
