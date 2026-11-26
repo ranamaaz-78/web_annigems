@@ -9,10 +9,6 @@
   .shop-layout{grid-template-columns:1fr}
   .sidebar{position:static;max-height:none}
   .co-layout{grid-template-columns:1fr}
-  .conf-ring-grid{grid-template-columns:1fr 1fr}
-  .stone-grid{grid-template-columns:repeat(2,1fr)}
-  .conf-prev-layout{grid-template-columns:1fr}
-  .conf-size-layout{grid-template-columns:1fr;gap:24px}
 }
 @media(max-width:768px){
   .nav-links{display:none}
@@ -21,7 +17,7 @@
   .hero-content{padding:48px 20px}
   .hero-scroll{display:none}
   .section{padding:60px 20px}
-  .shop-page,.pd-wrap,.co-wrap,.page-wrap,.conf-wrap{padding-left:20px;padding-right:20px}
+  .shop-page,.pd-wrap,.co-wrap,.page-wrap{padding-left:20px;padding-right:20px}
   .pd-layout{grid-template-columns:1fr;gap:36px}
   .reviews-layout{grid-template-columns:1fr}
   .qv-inner{grid-template-columns:1fr}
@@ -36,8 +32,6 @@
   .prod-grid,.prod-grid.cols5{grid-template-columns:1fr 1fr;gap:12px}
   .test-grid{grid-template-columns:1fr}
   .hero-ctas{flex-direction:column}
-  .stone-grid{grid-template-columns:1fr 1fr}
-  .conf-ring-grid{grid-template-columns:1fr}
   .form-r2{grid-template-columns:1fr}
   .co-steps{gap:4px}
   .co-step{font-size:11px;gap:4px}

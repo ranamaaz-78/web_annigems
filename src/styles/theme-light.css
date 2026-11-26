@@ -12,10 +12,8 @@
 [data-theme="light"] .nl-input{color:var(--t1)}
 [data-theme="light"] .pc:hover{box-shadow:0 12px 40px rgba(0,0,0,.15)}
 [data-theme="light"] .cat-card:hover{box-shadow:0 12px 48px rgba(0,0,0,.18)}
-[data-theme="light"] .mega-box{box-shadow:0 24px 64px rgba(0,0,0,.15)}
 [data-theme="light"] .search-box{background:rgba(255,255,255,.95);border-color:var(--bdr2)}
 [data-theme="light"] .search-results{background:rgba(255,255,255,.97)}
-[data-theme="light"] .conf-showcase{background:var(--conf-showcase-bg)}
 [data-theme="light"] .hero-h1{color:var(--t1)}
 [data-theme="light"] .hero-h1 em{background:var(--gold-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 [data-theme="light"] .hero-p{color:rgba(26,23,16,.75)}

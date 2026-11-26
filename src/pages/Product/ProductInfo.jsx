@@ -88,18 +88,19 @@ export default function ProductInfo({ product }) {
       )}
 
       <div className="pd-specs">
-        <div className="pd-spec">
-          <span>Metal</span>
-          <span>{product.metal}</span>
-        </div>
-        <div className="pd-spec">
-          <span>Stone</span>
-          <span>{product.stone}</span>
-        </div>
-        <div className="pd-spec">
-          <span>Weight</span>
-          <span>{product.weight}</span>
-        </div>
+        {/* Only the specs a product has (a loose stone has no metal) */}
+        {[
+          ['Metal', product.metal],
+          ['Stone', product.stone],
+          ['Weight', product.weight],
+        ]
+          .filter(([, value]) => value)
+          .map(([label, value]) => (
+            <div className="pd-spec" key={label}>
+              <span>{label}</span>
+              <span>{value}</span>
+            </div>
+          ))}
       </div>
 
       <div className="pd-actions">

@@ -6,7 +6,6 @@ import { useUI } from '../../hooks/useUI';
 import { BagIcon, HeartIcon, SearchIcon, UserIcon } from '../common/Icons';
 import Logo from '../common/Logo';
 import ThemeToggle from '../common/ThemeToggle';
-import MegaMenu from './MegaMenu';
 
 const navClass = ({ isActive }) => `nav-link${isActive ? ' active' : ''}`;
 
@@ -38,12 +37,9 @@ export default function Navbar() {
           <Link className={shopClass('mountings')} to="/shop?cat=mountings">
             Mountings
           </Link>
-          <div className="has-mega">
-            <Link className={`nav-link${onShop && cat !== 'gemstones' && cat !== 'mountings' ? ' active' : ''}`} to="/shop?cat=jewellery">
-              Jewellery
-            </Link>
-            <MegaMenu />
-          </div>
+          <Link className={`nav-link${onShop && cat !== 'gemstones' && cat !== 'mountings' ? ' active' : ''}`} to="/shop?cat=jewellery">
+            Jewellery
+          </Link>
           <NavLink className="nav-link hl" to="/design-your-ring">
             Design Your Ring
           </NavLink>

@@ -26,20 +26,6 @@
 .hamburger:hover{background:rgba(201,168,76,.14)}
 .hamburger span{display:block;width:20px;height:1.5px;background:var(--t2);border-radius:2px}
 
-/* MEGA MENU */
-.has-mega{position:relative;height:100%;display:flex;align-items:center}
-.has-mega:hover .mega{opacity:1;visibility:visible;transform:translateY(0)}
-.mega{position:absolute;top:100%;left:-32px;width:620px;opacity:0;visibility:hidden;transform:translateY(10px);transition:var(--tr);z-index:300;padding-top:14px}
-.mega-box{background:color-mix(in srgb,var(--bg1) 84%,transparent);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);border:1px solid var(--bdr2);border-radius:var(--rg);padding:28px;display:grid;grid-template-columns:1fr 1fr 1fr 140px;gap:24px;box-shadow:0 24px 64px rgba(0,0,0,.7)}
-.mega-col{display:flex;flex-direction:column;gap:10px}
-.mega-head{font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:4px}
-.mega-lk{font-size:13px;color:var(--t2);transition:color var(--tr)}
-.mega-lk:hover{color:var(--gold-lt)}
-.mega-feat img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:var(--r);margin-bottom:10px;border:1px solid var(--bdr)}
-.mega-feat-tag{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:4px}
-.mega-feat-name{font-family:var(--serif);font-size:15px;font-weight:500;margin-bottom:10px}
-.btn-gsm{background:var(--gold-grad);color:var(--bg);font-weight:700;font-size:11px;padding:8px 16px;border-radius:100px;transition:var(--tr)}
-.btn-gsm:hover{box-shadow:0 4px 16px rgba(201,168,76,.35)}
 
 /* ─── THEME TOGGLE BUTTON ─── */
 .theme-toggle{

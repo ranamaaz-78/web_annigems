@@ -94,6 +94,7 @@ export function mapStone(s, combos) {
     origin: s.origin ?? '',
     gemPrice: major(s.price),
     rarity: s.rarity ?? '',
+    carat: s.carat ?? null,
     color: s.color || '#90caf9',
     glow: s.glow || 'rgba(255,255,255,0.2)',
     gem: s.uses_diamond_animation ? null : s.gem_style,
