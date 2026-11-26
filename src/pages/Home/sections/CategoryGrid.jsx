@@ -10,7 +10,8 @@ export default function CategoryGrid() {
         title={HOME.categorySection?.title || 'Shop by Category'}
         subtitle={HOME.categorySection?.subtitle || 'From everyday elegance to once-in-a-lifetime pieces'}
       />
-      <div className="cats-grid" data-stagger=".cat-card">
+      {/* 3 per row when that gives full rows (e.g. 6 = 3 × 2), otherwise 4 */}
+      <div className={`cats-grid${CATEGORIES.length % 4 !== 0 && CATEGORIES.length % 3 === 0 ? ' cols3' : ''}`} data-stagger=".cat-card">
         {CATEGORIES.map((cat) => (
           <Link className="cat-card" key={cat.id} to={`/shop?cat=${cat.id}`}>
             <div className="cat-img-wrap">

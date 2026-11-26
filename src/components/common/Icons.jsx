@@ -63,3 +63,38 @@ export const InstagramIcon = ({ size = 16 }) => (
     <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
   </svg>
 );
+
+const line = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.7, strokeLinecap: 'round', strokeLinejoin: 'round', viewBox: '0 0 24 24', 'aria-hidden': true };
+
+export const PhoneIcon = ({ size = 16 }) => (
+  <svg width={size} height={size} {...line}>
+    <path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2" />
+  </svg>
+);
+
+export const MailIcon = ({ size = 16 }) => (
+  <svg width={size} height={size} {...line}>
+    <rect x="3" y="5" width="18" height="14" rx="2" />
+    <path d="m3 7 9 6 9-6" />
+  </svg>
+);
+
+export const PinIcon = ({ size = 16 }) => (
+  <svg width={size} height={size} {...line}>
+    <path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z" />
+    <circle cx="12" cy="10" r="2.5" />
+  </svg>
+);
+
+export const ClockIcon = ({ size = 16 }) => (
+  <svg width={size} height={size} {...line}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 7v5l3 2" />
+  </svg>
+);
+
+export const ChatIcon = ({ size = 16 }) => (
+  <svg width={size} height={size} {...line}>
+    <path d="M20 12a8 8 0 0 1-11.8 7L4 20l1.1-4A8 8 0 1 1 20 12z" />
+  </svg>
+);

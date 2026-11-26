@@ -36,3 +36,4 @@
 [data-theme="light"] .nav-icon:hover{color:var(--gold)}
 [data-theme="light"] .hamburger span{background:rgba(26,23,16,.6)}
 [data-theme="light"] .hamburger{border-color:rgba(160,120,40,.2)}
+[data-theme="light"] .ab-col-small{border-color:var(--bg)}

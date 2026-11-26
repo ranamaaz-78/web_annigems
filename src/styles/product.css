@@ -69,3 +69,50 @@
 .pd-review-lk{font-size:13px;color:var(--gold);margin-left:6px}
 .pd-section{padding:0 0 60px}
 .pd-section-title{font-family:var(--serif);font-size:32px;font-weight:400;margin-bottom:32px;background:var(--gold-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+/* Gallery: hover zoom + full-screen viewer */
+.pd-main-img{display:block;width:100%;padding:0;cursor:zoom-in}
+.pd-main-img img{transition:transform .35s ease}
+.pd-main-img.zooming img{transform:scale(2)}
+.pd-zoom-hint{position:absolute;right:14px;bottom:14px;padding:6px 12px;border-radius:999px;font-size:11px;color:#efe7d6;background:rgba(10,8,5,.6);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);opacity:.85;transition:opacity var(--tr);pointer-events:none}
+.pd-main-img.zooming .pd-zoom-hint{opacity:0}
+.pd-viewer{position:fixed;inset:0;z-index:700;display:grid;place-items:center;background:rgba(6,5,3,.94);animation:fadeUp .25s ease}
+.pd-viewer>img{max-width:min(92vw,1100px);max-height:86vh;object-fit:contain;border-radius:16px}
+.pd-viewer-x{position:absolute;top:18px;right:18px;width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.2);color:#fff;font-size:15px}
+.pd-viewer-nav{position:absolute;top:50%;transform:translateY(-50%);width:52px;height:52px;border-radius:50%;border:1px solid rgba(255,255,255,.2);color:#fff;font-size:30px;line-height:1;background:rgba(255,255,255,.06)}
+.pd-viewer-nav:hover,.pd-viewer-x:hover{border-color:var(--gold);color:var(--gold)}
+.pd-viewer-nav.prev{left:18px}
+.pd-viewer-nav.next{right:18px}
+.pd-viewer-count{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);font-size:12px;letter-spacing:.14em;color:rgba(255,255,255,.7)}
+
+/* Trust row under Add to Cart */
+.pd-trust{list-style:none;margin:0;padding:14px 16px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;border:1px solid var(--bdr);border-radius:var(--rg);background:rgba(201,168,76,.04)}
+.pd-trust li{display:flex;align-items:center;gap:8px;font-size:12px;line-height:1.35;color:var(--t2)}
+.pd-trust-ico{flex-shrink:0;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:12px;color:var(--gold);background:rgba(201,168,76,.12);border:1px solid var(--bdr2)}
+.size-guide-lk{text-decoration:underline;text-underline-offset:3px}
+.pd-guide-note{margin-top:12px;font-size:12px;color:var(--t3)}
+
+/* Phones: slim sticky add-to-cart bar */
+.pd-bar{position:fixed;left:0;right:0;bottom:0;z-index:150;display:flex;align-items:center;gap:12px;padding:10px 4% calc(10px + env(safe-area-inset-bottom));
+  background:color-mix(in srgb,var(--bg1) 92%,transparent);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-top:1px solid var(--bdr2);box-shadow:0 -12px 30px rgba(0,0,0,.22);
+  transform:translateY(110%);transition:transform .3s cubic-bezier(.4,0,.2,1)}
+.pd-bar.show{transform:none}
+.pd-bar-info{display:flex;flex-direction:column;min-width:0}
+.pd-bar-name{font-size:11px;color:var(--t3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pd-bar-price{font-family:var(--serif);font-size:22px;font-weight:600;line-height:1.1;background:var(--gold-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.pd-bar-btn{flex:1;max-width:58%;margin-left:auto;padding:13px 12px;font-size:13px;white-space:nowrap}
+
+/* Loading skeleton */
+.skel{border-radius:10px;background:linear-gradient(90deg,var(--bg2) 25%,var(--bg3) 50%,var(--bg2) 75%);background-size:200% 100%;animation:skel 1.3s ease infinite}
+.skel-img{aspect-ratio:1/1;border-radius:var(--rx)}
+.pd-skel-info{display:flex;flex-direction:column;gap:14px}
+@keyframes skel{to{background-position:-200% 0}}
+@media(max-width:768px){
+  .pd-trust{grid-template-columns:1fr;gap:8px}
+  .pd-viewer-nav{width:42px;height:42px;font-size:24px}
+  .pd-viewer-nav.prev{left:8px}
+  .pd-viewer-nav.next{right:8px}
+}
+@media(prefers-reduced-motion:reduce){.skel{animation:none}.pd-main-img.zooming img{transform:none}}
+/* the sticky bar must not cover the end of the footer */
+.app-main:has(.pd-bar) ~ .ft{margin-bottom:calc(84px + env(safe-area-inset-bottom))}

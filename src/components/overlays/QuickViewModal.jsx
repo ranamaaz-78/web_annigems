@@ -64,7 +64,7 @@ export default function QuickViewModal() {
             <p className="qv-cat">{product.category}</p>
             <h2 className="qv-name">{product.name}</h2>
             <p className="qv-sub">{product.subtitle}</p>
-            <Stars rating={product.rating} className="qv-stars" />
+            {product.reviews > 0 && <Stars rating={product.rating} className="qv-stars" />}
             <div className="qv-price-row">
               <span className="qv-price">{formatPrice(productPrice(product).price)}</span>
               {productPrice(product).isB2B ? (

@@ -1,7 +1,7 @@
 import { CATEGORIES, MAX_PRICE, STONE_FILTERS } from '../../data/catalog';
 import { formatPrice, formatPriceRounded } from '../../utils/format';
 
-const CATEGORY_OPTIONS = [{ id: 'all', label: 'All Jewelry' }, ...CATEGORIES];
+const CATEGORY_OPTIONS = [{ id: 'all', label: 'All' }, ...CATEGORIES];
 
 export default function ShopSidebar({ category, maxPrice, stones, onCategory, onMaxPrice, onToggleStone, onReset, open, onClose, count }) {
   return (

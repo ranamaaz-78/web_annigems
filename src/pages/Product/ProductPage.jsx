@@ -27,7 +27,8 @@ export default function ProductPage() {
       .then((res) => {
         if (cancelled) return;
         hydrateProductPagePoints(res.data);
-        setDetail({ id, ...upsertProduct(res.data) });
+        // routeId: the id in the URL (slug or legacy id); the product's own id may differ
+        setDetail({ ...upsertProduct(res.data), routeId: id });
       })
       .catch((err) => !cancelled && err.status === 404 && setMissing(true));
     return () => {
@@ -35,14 +36,31 @@ export default function ProductPage() {
     };
   }, [id]);
 
-  const current = detail?.id === id ? detail : null;
+  const current = detail?.routeId === id ? detail : null;
   const product = current ?? getProductById(id);
   if (missing) return <Navigate to="/shop" replace />;
-  if (!product) return null;
+  if (!product) {
+    return (
+      <div className="pd-wrap" aria-busy="true" aria-label="Loading product">
+        <div className="pd-layout pd-skel">
+          <div className="skel skel-img" />
+          <div className="pd-skel-info">
+            <div className="skel" style={{ width: '22%', height: 12 }} />
+            <div className="skel" style={{ width: '75%', height: 40 }} />
+            <div className="skel" style={{ width: '40%', height: 14 }} />
+            <div className="skel" style={{ width: '35%', height: 44, marginTop: 12 }} />
+            <div className="skel" style={{ width: '100%', height: 64 }} />
+            <div className="skel" style={{ width: '100%', height: 96 }} />
+            <div className="skel" style={{ width: '100%', height: 52, borderRadius: 999 }} />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  const related = current?.related?.length
-    ? current.related.slice(0, MAX_RELATED)
-    : PRODUCTS.filter((p) => p.category === product.category && p.id !== product.id).slice(0, MAX_RELATED);
+  // Same category first (API order), then other pieces so the row is always full.
+  const sameCategory = current?.related?.length ? current.related : PRODUCTS.filter((p) => p.category === product.category && p.id !== product.id);
+  const related = [...sameCategory, ...PRODUCTS.filter((p) => p.id !== product.id && !sameCategory.some((r) => r.id === p.id))].slice(0, MAX_RELATED);
 
   // `key` resets gallery/size selection when navigating between products
   return (
@@ -58,7 +76,7 @@ export default function ProductPage() {
         <div data-reveal="left"><ProductGallery images={product.gallery} name={product.name} /></div>
         <div data-reveal="right"><ProductInfo product={product} /></div>
       </div>
-      <ProductReviews product={product} reviews={current?.productReviews ?? []} />
+      {product.reviews > 0 && <ProductReviews product={product} reviews={current?.productReviews ?? []} />}
       {related.length > 0 && (
         <section className="pd-section" data-reveal="up">
           <h2 className="pd-section-title">You May Also Love</h2>

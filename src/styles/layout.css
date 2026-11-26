@@ -76,3 +76,7 @@
 
 /* Design Your Ring on phones: leave room for the fixed price bar under the footer */
 .app-main:has(.dym) ~ .ft{margin-bottom:calc(96px + env(safe-area-inset-bottom))}
+
+/* Bestsellers strip under empty pages */
+.bestsellers{padding:24px 0 20px}
+.empty-state{padding:56px 20px 40px}

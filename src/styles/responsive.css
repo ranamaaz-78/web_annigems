@@ -12,7 +12,8 @@
 @media(max-width:768px){
   .nav-links{display:none}
   .hamburger{display:flex}
-  .cats-grid,.prod-grid,.prod-grid.cols5{grid-template-columns:repeat(2,1fr)}
+  .cats-grid,.cats-grid.cols3,.prod-grid,.prod-grid.cols5{grid-template-columns:repeat(2,1fr)}
+  .cats-grid.cols3 .cat-img-wrap{aspect-ratio:3/4}
   .hero-content{padding:48px 20px}
   .hero-scroll{display:none}
   .section{padding:60px 20px}

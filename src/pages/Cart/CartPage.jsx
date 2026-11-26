@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Bestsellers from '../../components/product/Bestsellers';
 import { Link } from 'react-router-dom';
 import EmptyState from '../../components/common/EmptyState';
 import PageHero from '../../components/common/PageHero';
@@ -26,6 +27,7 @@ export default function CartPage() {
       <div className="page-wrap">
         <PageHero crumbs={crumbs} title="Your Cart" />
         <EmptyState icon="◈" title="Your cart is empty" text="Discover our collections and find your perfect piece." actionLabel="Browse Collection" actionTo="/shop" />
+        <Bestsellers />
       </div>
     );
   }

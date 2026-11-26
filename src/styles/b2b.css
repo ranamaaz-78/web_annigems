@@ -54,7 +54,7 @@
 .b2b-sent{text-align:center;padding:12px 0}
 
 /* ── services page ── */
-.svc-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.svc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
 .svc-card{background:var(--bg2);border:1px solid var(--bdr);border-radius:var(--rx);padding:30px;display:flex;flex-direction:column;align-items:flex-start;gap:10px;transition:border-color var(--tr)}
 .svc-card:hover{border-color:var(--bdr3)}
 .svc-icon{font-size:26px;color:var(--gold)}

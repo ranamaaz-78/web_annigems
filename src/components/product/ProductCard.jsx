@@ -68,10 +68,12 @@ export default function ProductCard({ product, showCategory = false }) {
           <Link to={productUrl}>{product.name}</Link>
         </h3>
         <p className="pc-sub">{product.subtitle}</p>
-        <div className="pc-stars">
-          <Stars rating={product.rating} />{' '}
-          <span style={{ fontSize: 11, color: 'var(--t3)' }}>({product.reviews})</span>
-        </div>
+        {product.reviews > 0 && (
+          <div className="pc-stars">
+            <Stars rating={product.rating} />{' '}
+            <span style={{ fontSize: 11, color: 'var(--t3)' }}>({product.reviews})</span>
+          </div>
+        )}
         <div className="pc-price-row">
           <span className="pc-price">{formatPrice(price)}</span>
           {isB2B ? (

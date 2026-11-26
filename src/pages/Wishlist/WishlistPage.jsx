@@ -1,6 +1,7 @@
 import Breadcrumb from '../../components/common/Breadcrumb';
 import EmptyState from '../../components/common/EmptyState';
 import SectionHeader from '../../components/common/SectionHeader';
+import Bestsellers from '../../components/product/Bestsellers';
 import ProductGrid from '../../components/product/ProductGrid';
 import { PRODUCTS } from '../../data/products';
 import { useShop } from '../../hooks/useShop';
@@ -24,6 +25,7 @@ export default function WishlistPage() {
           actionTo="/shop"
         />
       )}
+      {!products.length && <Bestsellers title="Pieces our clients love" />}
     </div>
   );
 }

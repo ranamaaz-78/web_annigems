@@ -10,7 +10,7 @@ export default function ServicesPage() {
         crumbs={[{ label: 'Home', to: '/' }, { label: 'Services' }]}
         eyebrow="After-care"
         title="Our Services"
-        subtitle="Your piece is for life. We resize, engrave, repair and redesign it whenever you need."
+        subtitle="Your piece is for life. We resize, repair and redesign it whenever you need."
       />
       <div className="svc-grid" data-stagger=".svc-card">
         {SERVICES.map((s) => (

@@ -5,6 +5,7 @@ import Hero from './sections/Hero';
 import MetalFeed from './sections/MetalFeed';
 import Newsletter from './sections/Newsletter';
 import ProductShowcase from './sections/ProductShowcase';
+import ShopByStone from './sections/ShopByStone';
 import Testimonials from './sections/Testimonials';
 
 
@@ -17,6 +18,7 @@ export default function HomePage() {
       <Hero />
       <MetalFeed />
       <CategoryGrid />
+      <ShopByStone />
       <ProductShowcase
         eyebrow="Handpicked for You"
         title="Featured Pieces"

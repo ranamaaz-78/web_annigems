@@ -2,12 +2,14 @@ import { useEffect, useRef, useState } from 'react';
 import { api } from '../../api/client';
 import { useNavigate } from 'react-router-dom';
 import { mergeProducts } from '../../data/products';
+import { pickBestsellers } from '../product/Bestsellers';
 import { usePricing } from '../../hooks/usePricing';
 import { useUI } from '../../hooks/useUI';
 import { formatPrice } from '../../utils/format';
 import { SearchIcon } from '../common/Icons';
 
 const MAX_RESULTS = 6;
+const POPULAR = ['Diamond', 'Ruby', 'Sapphire', 'Emerald', 'Solitaire', 'Mountings'];
 const SEARCH_DELAY_MS = 200;
 
 export default function SearchOverlay() {
@@ -73,6 +75,28 @@ export default function SearchOverlay() {
           ✕
         </button>
       </div>
+      {!query.trim() && (
+        <div className="search-start">
+          <p className="search-k">Popular searches</p>
+          <div className="search-chips">
+            {POPULAR.map((t) => (
+              <button key={t} type="button" onClick={() => setQuery(t)}>
+                {t}
+              </button>
+            ))}
+          </div>
+          <p className="search-k">Bestsellers</p>
+          <div className="search-best">
+            {pickBestsellers().map((p) => (
+              <button type="button" className="search-best-item" key={p.id} onClick={() => openProduct(p.id)}>
+                <img src={p.image} alt="" />
+                <span className="sr-name">{p.name}</span>
+                <span className="sr-cat">{formatPrice(productPrice(p).price)}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       {query.trim() && (
         <div className="search-results">
           {results.length === 0 ? (

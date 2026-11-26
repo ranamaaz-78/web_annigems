@@ -4,7 +4,7 @@ import { getLenis } from '../../lib/lenis';
 import { useSearchParams } from 'react-router-dom';
 import Breadcrumb from '../../components/common/Breadcrumb';
 import ProductGrid from '../../components/product/ProductGrid';
-import { CATEGORIES, MAX_PRICE, SORT_OPTIONS } from '../../data/catalog';
+import { CATEGORIES, MAX_PRICE, SORT_OPTIONS, STONE_FILTERS } from '../../data/catalog';
 import { PRODUCTS, mergeProducts } from '../../data/products';
 import { capitalize } from '../../utils/format';
 import { filterProducts } from './filterProducts';
@@ -16,7 +16,8 @@ const VALID_SORTS = SORT_OPTIONS.map((o) => o.value);
 export default function ShopPage() {
   // Category, sort and max price live in the URL so links and the back button work
   const [params, setParams] = useSearchParams();
-  const [stones, setStones] = useState([]);
+  // ?stone=Ruby (Shop by Stone links) pre-selects that stone filter
+  const [stones, setStones] = useState(() => params.getAll('stone').filter((s) => STONE_FILTERS.includes(s)));
   const [filtersOpen, setFiltersOpen] = useState(false); // bottom sheet on small screens
 
   const category = VALID_CATEGORIES.includes(params.get('cat')) ? params.get('cat') : 'all';
